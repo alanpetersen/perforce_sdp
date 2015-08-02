@@ -1,0 +1,78 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# Copyright (c) Perforce Software, Inc., 2007-2015. All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1  Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2.  Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PERFORCE
+# SOFTWARE, INC. BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+# THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#------------------------------------------------------------------------------
+
+# This is an example maintenance script to run the recommended maintenance scripts on a weekly basis.
+# You need to make sure you update the hard coded locations to match yours if you are not using the
+# default locations.
+#
+
+export SDP_INSTANCE="${1:-1}"
+
+. /p4/common/bin/p4_vars $SDP_INSTANCE
+
+# Link the sdp directory under /p4
+export PATH=$PATH:/p4/sdp/Maintenance:./
+
+export LOG=/p4/${SDP_INSTANCE}/logs/maintenace_log.txt
+
+echo . > $LOG
+
+cd "/p4/sdp/Maintenance" >> $LOG
+
+echo ======================================= >> $LOG
+echo Running unload_labels.py >> $LOG
+echo The time is: `date` >> $LOG
+unload_labels.py >> $LOG 2>&1
+
+echo ======================================= >> $LOG
+echo Running unload_clients.py >> $LOG
+echo The time is: `date` >> $LOG
+unload_clients.py >> $LOG 2>&1
+
+echo ======================================= >> $LOG
+echo Running delusers.py >> $LOG
+echo The time is: `date` >> $LOG
+delusers.py >> $LOG 2>&1
+
+echo ======================================= >> $LOG
+echo Running email_pending_client_deletes.py >> $LOG
+echo The time is: `date` >> $LOG
+email_pending_client_deletes.py 1 >> $LOG 2>&1
+
+echo ======================================= >> $LOG
+echo Running email_pending_user_deletes.py >> $LOG
+echo The time is: `date` >> $LOG
+email_pending_user_deletes.py 1 >> $LOG 2>&1
+
+echo ======================================= >> $LOG
+echo Removing empty pending changes. >> $LOG
+echo The time is: `date` >> $LOG
+remove_empty_pending_changes.py >> $LOG 2>&1
+
+echo The time is: `date` >> $LOG
+mail -s "Weekly maintenance log" $MAILTO  < $LOG

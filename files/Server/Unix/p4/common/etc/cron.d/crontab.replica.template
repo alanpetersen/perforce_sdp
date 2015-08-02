@@ -1,0 +1,22 @@
+MAILTO=REPL_MAILTO
+MAILFROM=REPL_MAILFROM
+PATH=/p4/common/bin:/p4/1/bin:/p4/2/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:
+SHELL=/bin/bash
+
+# common tasks
+
+INSTANCE=1
+# Verify
+0 6 * * 6 [ -e /p4/common/bin ] && /p4/common/bin/p4verify.sh ${INSTANCE}
+
+# Sync checkpoints from master
+0 5 * * 0-5 [ -e /p4/common/bin ] && /p4/common/bin/sync_replica.sh ${INSTANCE}
+# Don't run the line below on replicas that are being used as it resets the replica once per week.
+0 5 * * 6 [ -e /p4/common/bin ] && /p4/common/bin/weekly_sync_replica.sh ${INSTANCE}
+
+# If you can't run the scripts above due to rsync issues, then run this one instead.
+# 0 5 * * 0-5 [ -e /p4/common/bin ] && /p4/common/bin/replica_cleanup.sh ${INSTANCE}
+
+# Replica Status
+0 8 * * 0-6 [ -e /p4/common/bin ] && /p4/common/bin/replica_status.sh ${INSTANCE} > /dev/null
+

@@ -1,0 +1,12 @@
+# common tasks
+
+# Verify
+0 4 * * 6 /p4/common/bin/p4verify.sh 1
+
+# Checkpoints
+0 2 * * 6 /p4/common/bin/weekly_backup.sh 1
+0 2 * * 0-5 /p4/common/bin/daily_backup.sh 1
+
+# p4review daemon
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * /p4/common/bin/p4review.py 1
+

@@ -1,0 +1,151 @@
+ASSUMPTIONS:
+- using Python 2.7.x
+- ldap usernames (sAMAccountName) match the Perforce usernames
+- Perforce user used by the script has an unlimited ticket
+- Perforce server does not use ssl — script will have to be modified to set P4TRUST variable if SSL is required
+- examples in this document assume "standard" SDP paths (e.g. triggers installed in /p4/common/bin/triggers, instance directory
+is /p4/1, etc.) These are not hard-coded in the script, all paths can be configured using the configuraiton file.
+
+USAGE:
+
+In addition to being an auth-check trigger, this script can be used to:
+- create/edit entries in the local password file (-e)
+- test authentication (-t)
+
+Rudimentary help is available using the -h option:
+
+$ ./authCheckTrigger.py -h
+usage: authCheckTrigger.py [-h] [-u USERNAME] -c CONFIGFILE [-e] [-t] [-v]
+
+auth-check trigger implementation.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -u USERNAME, --user USERNAME
+                        the username to authenticate
+  -c CONFIGFILE, --config CONFIGFILE
+                        the configuration file
+  -e, --edit            edit the local password file
+  -t, --test            run in test mode
+  -v, --verbose         override configuration and set logging level to DEBUG
+
+
+
+INSTALLATION:
+
+1. Install bcrypt (from https://code.google.com/p/py-bcrypt)
+	$ wget https://py-bcrypt.googlecode.com/files/py-bcrypt-0.4.tar.gz
+	$ tar xzf py-bcrypt-0.4.tar.gz
+	$ cd py-bcrypt-0.4
+	$ python setup.py build
+	$ sudo python setup.py install
+
+   Verify that bcrypt is installed correctly by running Python from the command line and trying to import ldap:
+	$ python
+	>>> import bcrypt
+	>>> quit()
+   You should not see any error when running the import. If you do, then bcrypt is not installed correctly.
+
+2. Install python-ldap
+	sudo pip install python-ldap
+   Verify that python-ldap is installed correctly by running Python from the command line and trying to import ldap:
+	$ python
+	>>> import ldap
+	>>> quit()
+   You should not see any error when running the import. If you do, then python-ldap is not installed correctly.
+
+3. Extract the trigger script distribution. There are two files in there: authCheckTrigger.py and a sample config file auth.cfg
+
+4. Modify the configuration file
+	the values supplied are examples, you will need to update them for your environment
+	- the [globals] section defines global variables used by the program the variables are:
+[globals]
+# absolute path to the Perforce client
+p4.path = /usr/local/bin/p4
+# P4PORT of the Perforce server
+p4.port = localhost:1666
+# username used to query the Perforce server (does not need admin access)   
+p4.user = auth.user
+# location of the tickets file (should be an absolute path
+p4.tickets = /p4/1/auth.tickets
+# absolute path to the local password (AD bypass) file
+passwd.file = /p4/1/etc/passwd.txt
+# logging level. Should be ERROR, WARN or DEBUG
+log.level = DEBUG
+# absolute path to the auth log file
+log.file = /p4/1/logs/authCheck.log
+# default Perforce group if the user has no groups
+default.perforce.group = grp1
+# timeout for LDAP connections
+timeout = 10
+# custom failure message
+auth.failed.message = Authentication Failed. Access Denied.
+
+	- you should add a [server_n] section for each AD server. These sections must be uniquely named.
+
+[server_1]
+# Perforce group corresponding to this server
+perforce.group = ldap.server1
+# LDAP URL for the server.
+# this should be in the format ldap://host:port or ldaps://host:port (second used for SSL)
+server.url = ldap://ldap1_host:389
+# account domain used for authentication
+account.domain = @company.com
+
+5. Ensure that the Perforce user is in a group with an unlimited timeout
+
+6. Set the P4TICKETS environment variable to match that used in the config file 
+
+7. Login with the Perforce user specified in the config file
+	- ensure that the ticket does not expire
+
+8. Use the script to create entries in the local password file (if desired):
+	$ /p4/common/bin/triggers/authCheckTrigger.py -c /path/to/auth.cfg -e
+	---- EDIT MODE ----
+	enter username: tad
+	Enter password (will not appear) > 
+	Type it again (will not appear) > 
+	
+9. Check the entry in the local password file (test with valid and invalid passwords)
+	$ /p4/common/bin/triggers/authCheckTrigger.py -c /path/to/auth.cfg -t
+	---- TEST MODE ----
+	enter username: tad
+	Enter password (will not appear) > 
+	Credentials were valid. Access to Perforce would be allowed
+
+	$ /p4/common/bin/triggers/authCheckTrigger.py -c /path/to/auth.cfg -t
+	---- TEST MODE ----
+	enter username: tad
+	Enter password (will not appear) > 
+	Invalid credentials. Access to Perforce would be denied.
+
+10. Create the Perforce group(s) that correspond to the perforce.group entries in the configuration file. Add the appropriate user(s) to those groups.
+
+11. Now repeat step 9 but this time use a user who does not have an entry in the local password file (an AD user)
+
+12. Assuming that the testing all works, then you can install the trigger and restart the Perforce server. Make sure you backup the db.trigger table (in case you need to restore the triggers). The auth-check trigger entry should look something like the following. Note, if you do not have service users, you can omit the service-check line.
+
+	AUTH auth-check auth “/p4/common/bin/triggers/authCheckTrigger.py -c /p4/1/config/authCheck.cfg -u %user%"
+	S_AUTH service-check auth “/p4/common/bin/triggers/authCheckTrigger.py -c /p4/1/config/authCheck.cfg -u %user%"
+
+13. After restarting the trigger, verify that you can ‘p4 login’ to the server. Ensure that you test both positive and negative conditions (correct and incorrect passwords) for the combinations:
+	- local (bypass) users
+	- users for each configured ldap server
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

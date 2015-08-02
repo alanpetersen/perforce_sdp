@@ -1,0 +1,99 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# Copyright (c) Perforce Software, Inc., 2007-2015. All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1  Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2.  Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PERFORCE
+# SOFTWARE, INC. BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+# THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#------------------------------------------------------------------------------
+
+#
+# Perforce server base init script
+
+# do nothing unless $SDP_INSTANCE is defined.
+if [[ -z $SDP_INSTANCE ]]; then
+   echo $SDP_INSTANCE
+   echo "SDP_INSTANCE is invalid."
+   exit 1
+fi
+
+export TMP=$P4TMP
+
+if [ ! -x $P4DBIN ] ; then
+   echo "$P4DBIN is not executable."
+   exit 2;
+fi
+
+if [ `$ID -u` = 0 ]; then
+   exec su - $OSUSER -c "$0 $1"
+elif [ "`$ID -u -n`" != $OSUSER ]; then
+   echo "$0 can only be run by root or $OSUSER"
+   exit 1
+fi
+
+# See how we were called.
+case "$1" in
+   force_start)
+      echo "Starting $P4DBIN $P4D_FLAGS"
+      $P4DBIN $P4D_FLAGS
+   ;;
+   start)
+      if [[ -r $P4ROOT/db.domain ]]; then
+         PreflightLog=${P4TMP}/preflight.log
+         $P4DBIN -r $P4ROOT -xvU > $PreflightLog 2>&1
+         ExitCode=$?
+         echo EXIT_CODE=$ExitCode >> $PreflightLog
+
+         if [[ $ExitCode -ne 0 ]]; then
+            echo -e "\nError: DB check with 'p4d -xvU' failed.  Database integrity is in question.  Please Contact Perforce Support (support@perforce.com).  The force_start option is availble, but not recommended.  See:\n"
+            cat $PreflightLog
+            /bin/rm -f $PreflightLog
+            exit 1
+         else
+            /bin/rm -f $PreflightLog
+         fi
+      fi
+
+      echo "Starting $P4DBIN $P4D_FLAGS"
+      $P4DBIN $P4D_FLAGS
+   ;;
+   status)
+	$P4BIN -p $P4PORT -u $P4USER info -s
+   ;;
+   stop)
+	echo -n "Shutting down $P4DBIN: "
+	$P4BIN -p $P4PORT -u $P4USER login < /p4/common/bin/adminpass
+	$P4BIN -p $P4PORT -u $P4USER admin stop
+	echo
+   ;;
+   restart)
+	$0 stop
+	$0 start
+   ;;
+   *)
+      echo "Usage: $0 {start|stop|status|restart|force_start}"
+      exit 1
+   ;;
+esac
+
+exit 0
+

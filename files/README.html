@@ -1,0 +1,171 @@
+<h1>What is the Server Deployment Package (SDP?)</h1>
+
+<h2>Overview</h2>
+
+<p>The Server Deployment Package (SDP) provides a set of management scripts for operating various Perforce software products, such as:</p>
+
+<ul>
+<li>p4d</li>
+<li>p4broker</li>
+<li>p4p</li>
+<li>p4web</li>
+<li>p4dtg</li>
+<li>p4ftpd</li>
+</ul>
+
+<p>For <strong>p4d</strong> in particular, the SDP provides a sample implementation of best practices, such as performing <em>offline checkpoints</em>, rotating logs and journals routinely, and doing a database sanity/safety check before starting the server.</p>
+
+<p>The SDP provides a structure for operating multiple instances of Perforce on a given machine, allowing for the possibility of each instance having different configuration aspects, e.g.</p>
+
+<ul>
+<li>versions of software components (p4d, p4broker, etc.)</li>
+<li>case sensitivity setting (sensitive/insensitive)</li>
+<li>Unicode setting (enabled/disabled)</li>
+</ul>
+
+<h1>Bugs, Enhancements, and Future Plans</h1>
+
+<p>Perforce Jobs are used to file bugs and request enhancements to the SDP.  The list of jobs (other than closed ones) can be viewed <a href="https://swarm.workshop.perforce.com/projects/perforce-software-sdp/jobs" title="SDP Open Jobs">here</a>.</p>
+
+<p>You can see all jobs (including closed ones if desired) from the command line interface.  Connect to The Workshop and run the <code>p4 jobs</code> command, something like this:</p>
+
+<pre><code>p4 jobs -l -e "Project=perforce-software-sdp ^status=closed"
+</code></pre>
+
+<p>There is no formal roadmap for the SDP.</p>
+
+<h1>Contributing</h1>
+
+<p>Contributions to the SDP are most welcome!  Note that contributing requires a basic user knowledge of working with Perforce.</p>
+
+<h2>Contributing by Shelving</h2>
+
+<p>All registered Workshop users have <strong>open</strong> access (but not <strong>write</strong>) to the SDP, specifically to this path:</p>
+
+<pre><code>//guest/perforce_software/sdp/main/...
+</code></pre>
+
+<p>The <strong>open</strong> access level confers the ability to edit and <strong>shelve</strong> changes for a pre-commit review process.  We'll review the change, and either incorporate it or provide feedback. Be sure to provide a detailed change description, and also include the tag/text "[review]" in your changelist description to initiate a Swarm code review.</p>
+
+<h2>Contributing by Branching</h2>
+
+<p>Optionally, you may also branch the SDP folder, or some subset of it, into your own guest area.  Creating a branch spec is recommended for this purpose, e.g. with a branch spec like this:</p>
+
+<pre><code>Branch:     your_name-sdp
+
+Owner:      your_name
+
+Description:
+    SDP Updates by your_name.
+
+Options:    unlocked
+
+View:
+    //guest/perforce_software/sdp/main/Server/Unix/etc/... //guest/your_name/sdp/main/Server/Unix/etc/...
+</code></pre>
+
+<p>If you branch a subset, it's a good idea to maintain the full path structure (as in the example above), so you can easily expand the scope of what you branched initially at some later date.</p>
+
+<p>Edit, test and submit changes in your branch.  Then when you are done, merge your changes back into our mainline, shelving them for review.</p>
+
+<h2>Guidelines for SDP Contributors</h2>
+
+<ul>
+<li>Communicate using Swarm!  Let folks know what you're planning before you work to hard on something that might already be underway.</li>
+<li>File a job (Project=<strong>perforce-software-sdp</strong>) first.  That's not required, but increases the transparency of what you're doing, and helps promote it.</li>
+<li>We prefer changes that are generic, and have a wide appeal.</li>
+<li>The core of the SDP, the scripts that do offline checkpoints for p4d, prioritize Perforce best practices over scripting magic.  Don't get too fancy! :)</li>
+</ul>
+
+<h1>Versioning the SDP Locally</h1>
+
+<p>In line with the "Version Everything" mindset, the SDP itself should be versioned in your environment.</p>
+
+<p>Commonly the SDP is versioned in a depot such as <code>//Perforce</code> or <code>//p4admin</code>, with a structure like this:</p>
+
+<pre><code>//p4admin/p4c/sdp/...
+//p4admin/main/sdp/...
+//p4admin/host/&lt;hostname&gt;/p4/1/bin/...
+</code></pre>
+
+<p>The <strong>p4c</strong> and <strong>main</strong> folders are branches.  The <strong>p4c</strong> branch is designated for receiving generic SDP updates from The Workshop.  The <strong>main</strong> branch is where local customizations and/or configuration changes are applied.</p>
+
+<p>The <strong>host</strong> folder contains instance-specific and host-specific files, which effectively communicate part of your topology.  These define which services are active on which hosts.</p>
+
+<p>On the Perforce server machines, basic workspaces are used to manage the SDP.</p>
+
+<p>Recent versions of the SDP contain a <code>.p4ignore</code> file that helps avoid versioning of files that do not belong in version control, things like password files, editor temp files, and generated/compiled Python cache files.</p>
+
+<h2>Perforce Swarm and Perforce Git Fusion</h2>
+
+<p>When installing Perforce Swarm or Perforce Git Fusion in the SDP structure, they can and should be deployed in a way so as to benefit from the SDP structure, e.g. instances of Swarm and/or Git Fusion to run against each p4d instance.</p>
+
+<p>Details for doing this are not yet incorporated the mainline SDP, though they have been deployed at customer sites.  However, the basic ideas are fairly straightforward.  As a hint for Swarm, you'll want to apply the <code>SWARM<em>DATA</em>PATH</code> in the httpd configuration to reference Swarm for each SDP instance.</p>
+
+<h1>Upgrading Existing SDP Installations</h1>
+
+<p>If you have an earlier version of the Server Deployment Package (SDP) installed, you'll want to be aware of the new <code>-test</code> flag to the SDP setup script, <code>mkdirs.sh</code>.  The following update instructions assume a simple, single-server topology.</p>
+
+<p>Get the new software from The Workshop, which you'll find in the form of a SDP.Unix.*.tgz zipped tar file.  Put the tar file in the <code>/depotdata</code> folder on your server.  <strong>BE SURE TO MOVE THE OLD</strong> <code>/depotdata/sdp</code> folder aside first if it is there, e.g. to <code>/depotdata/sdp.old.2014-10-08</code>.</p>
+
+<p>Then unpack it like this:</p>
+
+<pre><code>tar -xzvpf SDP.Unix.2014.2.####.tgz
+cd /depotdata/sdp/Unix/setup
+</code></pre>
+
+<p>Modify the mkdirs.sh script to suit your environment (possibly borrowing values from your old <code>mkdirs.sh</code> script).</p>
+
+<p>Then run it:</p>
+
+<pre><code>mkdirs.sh 1 -test
+</code></pre>
+
+<p>That'll do a mock install, creating a <code><strong>/tmp/</strong>p4</code> structure, with folders like <code>/tmp/p4/common/bin</code> and <code>/tmp/p4/1/bin</code>.  The output will suggest some <code>diff -r</code> commands to run to to view the diffs and apply updates manually, being careful not to lose any customizations or local configuration changes you may have made.</p>
+
+<p>If the SDP itself is versioned in Perforce in your environment, you can also put the new things from /tmp/p4 into your Perforce server where the SDP is.  Commonly, there is a branch for receiving pristine updates of the generic SDP, e.g. 'p4c', which allow you to use Perforce merging to merge update into your local SDP mainline.</p>
+
+<p>Contact <a href="mailto:consulting@perforce.com">Perforce Consulting Services</a> to ask about engaging professional services to upgrade the SDP for you.</p>
+
+<p>A few quick things to be aware of:</p>
+
+<ul>
+<li><p>The old <code>p4<em>1</em>init</code> script (more generically <code>p4<em>instance</em>init</code>) was renamed to <code>p4<strong>d</strong><em>1</em>init</code>.  This will require updates to init script or symlink, e.g. in <code>/etc/init.d</code>.</p></li>
+<li><p>Once you upgrade p4d to 2014.1+, you can do away with the SDP trigger that updates depot spec map fields.  You can clear the <code>Map:</code> fields of depots, and use the 2014.1 <code>server.depot.root</code> configurable.  Going forward, you'd only use <code>Map:</code> fields for depots that really do require a unique path, e.g. archive depots.</p></li>
+</ul>
+
+<h1>SDP Structure</h1>
+
+<p>The SDP structure enables two major views of a Perforce server, the system administrator/storage architect view, and the application administrator view.  THe system admin sees this structure:</p>
+
+<pre><code>/depotdata
+/metadata 
+/logs
+</code></pre>
+
+<p>System administrators know they need to backup <code>/depotdata</code>.  Backing up <code>/logs</code> is optional, and /metadata is to be avoided by backup utilities, virus scanners, and anything else that might touch files in that area.  This view is designed for optimizing for performance, as each of those folders has different performance profiles and usage patterns demanded by p4d.  This view is not concerned with how many instances there are, or how they vary.</p>
+
+<p>Application administrators (Perforce Admins), though a structure of symlinks, see Perforce from a view like this:</p>
+
+<pre><code>/p4/1/bin
+/p4/1/config
+/p4/1/depots
+/p4/1/root
+/p4/1/ssl
+/p4/1/tmp
+/p4/common/bin
+</code></pre>
+
+<p>This structure illustrates an instanced named '1' (it need not be numeric), as a /p4/common area which contains files common to all instances.  Each of those folders is physically stored under an appropriate storage folder or volume as defined in the system admin view above.</p>
+
+<p>The <code>/p4/<em>instance</em>/bin</code> folder defines which Perforce products are active for that instance on the current machine (p4d, p4broker, p4p, etc.).  The <strong>root</strong> folder contains P4ROOT, while <strong>depots</strong> contains archive files.</p>
+
+<p>THe SDP provides standard mechanism for defining a controlled shell environment.  This benefits p4d and other Perforce software products directly, and also provides good examples of controlling the environment for supporting automation, such as Perforce standards guidance and policy enforcement scripts (e.g. p4d triggers or p4broker filter scripts).</p>
+
+<p>For advanced deployments, the SDP defines a standard for installing and configuring derived APIs, such as P4Python into /p4/common/python.</p>
+
+<p>Many Perforce customers use the SDP as-is.  Others benefit by incorporating concepts and ideas from the SDP into their own environments.</p>
+
+<h1>The Windows SDP</h1>
+
+<p>There are two flavors of the SDP, Unix and Windows.  Both are available in the same folder structure in the Workshop.</p>

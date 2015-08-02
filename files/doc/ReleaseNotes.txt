@@ -1,0 +1,80 @@
+                            Release Notes for
+                 SDP - the Server Deployment Package
+                          for the Perforce Server
+
+Introduction
+
+   This document notes major changes to the SDP.  There are two
+   flavors of the SDP, Unix and Windows.
+
+   At a high level, the core function of the SDP is similar on
+   Unix and Windows:  To maintain an offline of the Perforce
+   databases, and perform routine offline checkpoints in preparation
+   for backups.  At a detailed level, there are differences in both
+   implementation and behavior on the various platforms.
+
+   Enhancements are need-driven, and not necessarily applied across
+   Unix and Windows platforms.
+
+--------------------------------------------------------------------------
+Upgrading the SDP on Unix
+
+   To incorporate a new version of the SDP into an existing
+   SDP installation, first stage the deployment as in this
+   example, assuming you have put the SDP distribution tar file
+   in /depotdata.  Working as user root on a Perforce server:
+
+   cd /depotdata
+
+   # If an sdp folder exists here, move it aside, e.g. to
+   # sdp.MOVED_2014-09-11
+
+   tar -xzpf sdp.Unix.2014.2.10649.tgz
+   chown -R perforce:perforce sdp.Unix.2014.2.10649.tgz /depotdata/sdp
+
+   cd /depotdata/sdp/Server/Unix/p4/common/bin
+
+   # Copy 'p4', 'p4d', 'p4broker', 'p4web', 'p4p', etc. (only
+   # those currently used) into this 'bin' folder.
+
+   cd /depotdata/sdp/Server/Unix/setup
+   vi mkdirs.sh
+   # Review and adjustments to mkdirs.sh suit your environment.
+
+   ./mkdirs.sh 1 -test
+
+   Using 'mkdirs.sh' script with the '-test' flag as illustrated
+   above will deploy to the SDP to /tmp/p4 rather than /p4 area.
+
+   If working on the Production server directly, DO NOT forget
+   to use the '-test' flag.
+
+--------------------------------------------------------------------------
+Upgrading the SDP on Windows:
+
+    Install the SDP onto a different machine
+    - configure sdp_master_config.ini 
+    - run create_env.py
+
+    Manually copy resulting files to the appropriate places in your existing
+    installation.
+
+--------------------------------------------------------------------------
+Versioning the SDP:
+
+    We strongly recommend that files in the following locations are 
+    versioned in Perforce:
+
+	  On Unix:
+        /p4/<instance>/bin
+        /p4/common
+
+	  On Windows:
+        C:\p4\<instance>\root\license
+        C:\p4\common\...
+        C:\p4\config\...
+
+--------------------------------------------------------------------------
+CHANGE HISTORY:
+
+See https://swarm.workshop.perforce.com/projects/perforce-software-sdp/

@@ -1,0 +1,67 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# Copyright (c) Perforce Software, Inc., 2007-2014. All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1  Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2.  Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PERFORCE
+# SOFTWARE, INC. BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+# THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#------------------------------------------------------------------------------
+#
+# Perforce server base init script
+
+# p4dtg Init Script.
+# chkconfig: - 90 30
+# description: Perforce Server Start Up Script
+
+export TMP=$P4TMP
+
+if [ `$ID -u` = 0 ]; then
+  exec su - $OSUSER -c "$0 $1"
+elif [ "`$ID -u -n`" != $OSUSER ]; then
+  echo "$0 can only be run by root or $OSUSER"
+  exit 1
+fi
+
+# You need to update the name of the p4dtg configuration below
+# Replace p4bz with your p4dtg configuration name
+
+# See how we were called.
+case "$1" in
+  start)
+        /p4/p4dtg-2010.2.452775/p4dtg-repl p4bz /p4/p4dtg-2010.2.452775/ &
+        ;;
+  stop)
+        cd /p4/p4dtg-2010.2.452775/repl
+        touch stop-p4bz
+        echo
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit 0
+
