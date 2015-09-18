@@ -27,13 +27,13 @@ fi
 # P4Web settings:
 export P4WEBBIN=${P4HOME}/bin/p4web_${SDP_INSTANCE}
 export P4WEBLOG=${P4HOME}/logs/p4web.log
-export P4WEBPORT=REPL_P4WEBPORT
+export P4WEBPORT=<%= @p4webport %>
 
 # Authenticated Browse only mode:
 export P4WEBARGS="-B -p $P4PORT -w $P4WEBPORT -U $OSUSER -L $P4WEBLOG"
 
 # P4FTP settings:
-export P4FTPPORT=REPL_P4FTPPORT
+export P4FTPPORT=<%= @p4ftpport %>
 export P4FTPBIN=${P4HOME}/bin/p4ftpd_${SDP_INSTANCE}
 export P4FTPLOG=${P4HOME}/logs/ftp.log
 export P4FTPARGS="-d -l $P4FTPPORT -p $P4PORT -u $OSUSER -L $P4FTPLOG"

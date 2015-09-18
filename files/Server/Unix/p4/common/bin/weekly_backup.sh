@@ -54,22 +54,24 @@ if [[ $SDP_INSTANCE == Undefined ]]; then
    echo "You must supply the Perforce instance as a parameter to this script." 
    exit 1 
 fi 
+
 . /p4/common/bin/p4_vars $SDP_INSTANCE
 . /p4/common/bin/backup_functions.sh
 
 switch_db_files () {
-	log "Switching out db files..."
-        [ -d $SAVEDIR ] || mkdir -p $SAVEDIR
-	rm -f $SAVEDIR/db.* >> $LOGFILE 2>&1
-	mv $P4ROOT/db.* $SAVEDIR >> $LOGFILE 2>&1
-	mv $OFFLINE_DB/db.* $P4ROOT >> $LOGFILE 2>&1 || die "Move of offline db file to $P4ROOT failed."
+   log "Switching out db files..."
+   [[ -d $SAVEDIR ]] || mkdir -p $SAVEDIR
+   rm -f $SAVEDIR/db.* >> $LOGFILE 2>&1
+   mv $P4ROOT/db.* $SAVEDIR >> $LOGFILE 2>&1
+   mv $OFFLINE_DB/db.* $P4ROOT >> $LOGFILE 2>&1 || die "Move of offline db file to $P4ROOT failed."
 }
-
 
 ######### Start of Script ##########
 check_vars
 set_vars
+check_uid
 check_dirs
+ckp_running
 /p4/common/bin/p4login
 get_journalnum
 rotate_last_run_logs
@@ -81,9 +83,11 @@ stop_p4d
 sleep 5
 truncate_journal
 replay_journal_to_offline_db
-if [ $EDGESERVER -eq 1 ]; then
-        replay_active_journal_to_offline_db
+
+if [[ $EDGESERVER -eq 1 ]]; then
+   replay_active_journal_to_offline_db
 fi
+
 switch_db_files
 start_p4d
 echo Removing db files from $SAVEDIR since we know the journal successfully replayed at this point. >> $LOGFILE
@@ -95,12 +99,9 @@ replay_journal_to_offline_db
 ROOTDIR=$OFFLINE_DB
 dump_checkpoint
 remove_old_checkpoints_and_journals
-if [[ -d ${P4HOME}/checkpoints.rep ]]; then
-  export CHECKPOINTS=${P4HOME}/checkpoints.rep
-  remove_old_checkpoints_and_journals
-fi
 check_disk_space
 remove_old_logs
 log "End $P4SERVER Checkpoint"
 mail_log_file "$HOSTNAME $P4SERVER Weekly maintenance log."
 set_counter
+ckp_complete

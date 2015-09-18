@@ -30,8 +30,7 @@
 # P4Web base init script
 
 # do nothing unless $SDP_INSTANCE is defined.
-if [ -z $SDP_INSTANCE ]
-then
+if [[ -z $SDP_INSTANCE ]]; then
    echo $SDP_INSTANCE
    echo "SDP_INSTANCE is invalid."
    exit 1
@@ -39,9 +38,9 @@ fi
 
 export TMP=$P4TMP
 
-if [ ! -x $P4WEBBIN ] ; then
-      echo "$P4WEBBIN is not executable."
-      exit 2;
+if [[ ! -x $P4WEBBIN ]]; then
+   echo "$P4WEBBIN is not executable."
+   exit 2;
 fi
 
 # Souce in get_pids().
@@ -49,10 +48,10 @@ source $P4CBIN/ps_functions.sh || exit 1
 
 # See how we were called.
 case "$1" in
-  start)
-        echo "Starting $P4WEBBIN."
-        $P4WEBBIN $P4WEBARGS &
-        ;;
+   start)
+      echo "Starting $P4WEBBIN."
+      $P4WEBBIN $P4WEBARGS &
+   ;;
    status)
       p4web_pids=$(get_pids $P4WEBBIN)
       if [[ -n "$p4web_pids" ]]; then

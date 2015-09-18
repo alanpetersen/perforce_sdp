@@ -95,16 +95,12 @@ DD=depotdata
 LG=logs
 
 # If you are sharing the depotdata volume with a replica, change this value to TRUE
-# Be sure to set journalPrefix=/p4/<SDP_INSTANCE>/checkpoints.rep/p4_1 for the replica
-# so that the replica journals do not conflict with the master journals when rotating.
 SHAREDDATA=FALSE
 
 OSUSER=perforce
 OSGROUP=perforce
 SDP=/$DD/sdp
 
-
-#
 # CASEINSENSITIVE settings:
 # 0 -- Server will run with case sensitivity default of the underlying platform (Unix is case sensitive).
 # 1 -- Server will run in C1 mode, forcing case-insensitive mode on normally case-sensitive platforms
@@ -243,9 +239,7 @@ mkdir -p /$DD/p4/$SDP_INSTANCE/bin
 mkdir -p /$DD/p4/$SDP_INSTANCE/tmp
 mkdir -p /$DD/p4/$SDP_INSTANCE/depots
 mkdir -p /$DD/p4/$SDP_INSTANCE/checkpoints
-if [[ "$SHAREDDATA" == "TRUE" ]]; then
-	mkdir -p /$DD/p4/$SDP_INSTANCE/checkpoints.rep
-fi
+mkdir -p /$LG/p4/$SDP_INSTANCE/checkpoints.rep
 
 [[ -d $P4DIR/ssl ]] || mkdir -p $P4DIR/ssl
 [[ -d /$DD/p4/common/bin ]] || mkdir -p /$DD/p4/common/bin
@@ -263,13 +257,16 @@ if [[ $TEST -eq 0 ]]; then
     if [[ ! -d logs ]]; then
         [[ -L logs ]] || ln -s /$LG/p4/$SDP_INSTANCE/logs
     fi
+    if [[ ! -d checkpoints.rep ]]; then
+        [[ -L checkpoints.rep ]] || ln -s /$LG/p4/$SDP_INSTANCE/checkpoints.rep
+    fi
     cd $P4DIR
     [[ -L $SDP_INSTANCE ]] || ln -s /$DD/p4/$SDP_INSTANCE
     [[ -L sdp ]] || ln -s $SDP $P4DIR/sdp
     [[ -L common ]] || ln -s /$DD/p4/common
 fi
 
-if [[ $REPLICA_TF == "FALSE" ]]; then
+if [[ "$REPLICA_TF" == "FALSE" ]]; then
     SERVERID=$MASTERNAME
 else
     SERVERID=$REPLICANAME
@@ -299,6 +296,7 @@ if [[ ! -f /$DD/p4/common/bin/p4_vars ]]; then
      	-e "s/REPL_ADMINUSER/${ADMINUSER}/g" \
      	-e "s/REPL_SVCUSER/${SVCUSER}/g"  \
      	-e "s:REPL_SDPVERSION:${SDP_VERSION}:g" \
+     	-e "s:REPL_SHAREDDATA:${SHAREDDATA}:g" \
      	-e "s/REPL_OSUSER/${OSUSER}/g" $SDP_COMMON/config/p4_vars.template > p4_vars
 fi
 
@@ -469,6 +467,10 @@ fi
 
 echo "It is recommended that the ${OSUSER}'s umask be changed to 0026 to block world access to Perforce files."
 echo "Add umask 0026 to ${OSUSER}'s .bash_profile to make this change."
+if [[ "$REPLICA_TF" == "TRUE" ]]; then
+  echo "Be sure to set the configurable: ${REPLICANAME}#journalPrefix=/p4/${SDP_INSTANCE}/checkpoints.rep/p4_${SDP_INSTANCE}"
+  echo "Also, replication should be done using depot-standby in the server spec and journalcopy along with pull -L"
+fi
 
 if [[ $TEST -eq 1 ]]; then
   echo ""

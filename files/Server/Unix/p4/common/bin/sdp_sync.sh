@@ -35,6 +35,7 @@ if [[ $SDP_INSTANCE == Undefined ]]; then
    echo "You must supply the Perforce instance as a parameter to this script." 
    exit 1 
 fi 
+
 . /p4/common/bin/p4_vars $SDP_INSTANCE
 . /p4/common/bin/backup_functions.sh
 

@@ -30,8 +30,7 @@
 # P4FTP base init script
 
 # do nothing unless $SDP_INSTANCE is defined.
-if [ -z $SDP_INSTANCE ]
-then
+if [[ -z $SDP_INSTANCE ]]; then
    echo $SDP_INSTANCE
    echo "SDP_INSTANCE is invalid."
    exit 1
@@ -39,31 +38,32 @@ fi
 
 export TMP=$P4TMP
 
-if [ ! -x $P4FTPBIN ] ; then
-      echo "$P4FTPBIN is not executable."
-      exit 2;
+if [[ ! -x $P4FTPBIN ]] ; then
+   echo "$P4FTPBIN is not executable."
+   exit 2;
 fi
 
 # See how we were called.
 case "$1" in
-  start)
-	$P4FTPBIN $P4FTPARGS
-	ps -ef | grep "p4ftpd_${SDP_INSTANCE}" |grep -v grep|grep -v p4ftpd_${SDP_INSTANCE}_init|awk '{ print $2}' > $P4HOME/pid.p4ftpd_${SDP_INSTANCE}
-	;;
-  stop)
-	echo -n "Shutting down $P4FTPBIN: "
-	PID=`cat /p4/${INSTANCE}/pid.p4ftpd_${INSTANCE}`
-	kill $PID	
-	echo
-	;;
-  restart)
-	$0 stop
-	$0 start
-	;;
-  *)
-	echo "Usage: $0 {start|stop|restart}"
-	exit 1
-esac
+   start)
+      $P4FTPBIN $P4FTPARGS
+      ps -ef | grep "p4ftpd_${SDP_INSTANCE}" |grep -v grep|grep -v p4ftpd_${SDP_INSTANCE}_init|awk '{ print $2}' > $P4HOME/pid.p4ftpd_${SDP_INSTANCE}
+   ;;
+   stop)
+      echo -n "Shutting down $P4FTPBIN: "
+      PID=`cat /p4/${INSTANCE}/pid.p4ftpd_${INSTANCE}`
+      kill $PID
+      echo
+   ;;
+   restart)
+      $0 stop
+      $0 start
+   ;;
+   *)
+      echo "Usage: $0 {start|stop|restart}"
+      exit 1
+   ;;
+   esac
 
 exit 0
 

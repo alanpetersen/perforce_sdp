@@ -84,8 +84,8 @@ def delete_clients (clientlist, sim):
         if re.search("\.\.\. change ", changeline):
           changenum = changeline[11:]
           changenum = changenum.strip()
-          os.system('%s shelve -c %s -df' % (p4, changenum))
-      os.system('%s client -df -Fs %s' % (p4, client))
+          os.system('%s shelve -c "%s" -df' % (p4, changenum))
+      os.system('%s client -df -Fs "%s"' % (p4, client))
       shelvedfile.close()
       os.remove("shelved.txt")
 

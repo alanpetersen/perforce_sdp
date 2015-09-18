@@ -67,10 +67,6 @@ p4 configure set serverlog.retain.8=7
 :: For p4d 2013.1+
 p4 configure set server.maxcommands=1000
 
-:: For p4d 2012.2+, set net.maxwait to drop a client connection if waits
-:: too long for any single network read or write.
-p4 configure set net.maxwait=43200
-
 :: For p4d 2013.2+ -Turn off max* commandline overrides.
 p4 configure set server.commandlimits=2
 

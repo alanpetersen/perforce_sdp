@@ -1,0 +1,27 @@
+{
+  "_comment": "This file defines Vagrant boxes for use with SDP testing",
+  "oses": [
+    {
+      "osname": "ubuntu",
+      "box": "ubuntu-precise64",
+      "box_url": "http://files.vagrantup.com/precise64.box",
+      "nodes": [
+        {
+          ":nodename": "sdpmaster",
+          ":ip": "10.10.20.2"
+        }
+      ]
+    },
+    {
+      "osname": "centos",
+      "box": "centos64-x64",
+      "box_url": "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box",
+      "nodes": [
+        {
+          ":nodename": "sdpmaster",
+          ":ip": "10.10.30.2"
+        }
+      ]
+    }
+  ]
+}

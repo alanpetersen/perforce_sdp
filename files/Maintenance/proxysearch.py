@@ -47,7 +47,9 @@ for line in input.readlines():
     line = re.sub(r'.* (\d+\.\d+\.\d+\.\d+)\/\d+\.\d+\.\d+\.\d+ .*', rep, line)
     if line not in proxylist:
       proxylist.append(line)
-      print(line)
 
 input.close()
+
+for proxy in proxylist:
+  print(proxy)
 

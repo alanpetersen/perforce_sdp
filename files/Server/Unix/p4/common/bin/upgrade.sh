@@ -40,13 +40,13 @@ MAIL=mail
 
 OS=`uname`
 if [ "${OS}" = "SunOS" ] ; then
-  AWK=/usr/xpg4/bin/awk
-  ID=/usr/xpg4/bin/id
-  MAIL=mailx
+   AWK=/usr/xpg4/bin/awk
+   ID=/usr/xpg4/bin/id
+   MAIL=mailx
 elif [ "${OS}" = "AIX" ] ; then
-  AWK=awk
-  ID=id
-  MAIL=mail
+   AWK=awk
+   ID=id
+   MAIL=mail
 fi
 
 export AWK
@@ -58,7 +58,7 @@ common_dir=`pwd -P`
 
 . /p4/common/bin/backup_functions.sh
 
-if [ -d $common_dir ]; then
+if [[ -d $common_dir ]]; then
   cd $common_dir
 else
   echo $common_dir does not exist.
@@ -69,10 +69,19 @@ fi
 
 check_vars
 set_vars
-check_dirs
 
-[ -f $common_dir/p4 ] || { echo "No p4 in $common_dir" ; exit 1 ;}
-[ -f $common_dir/p4d ] || { echo "No p4d in $common_dir" ; exit 1 ;}
+# override setting of checkpoint.log from set_vars
+LOGFILE=$LOGS/upgrade.log
+
+if [[ -f $LOGFILE ]]; then
+  rm -f $LOGFILE
+fi
+
+check_dirs
+check_uid
+
+[[ -f $common_dir/p4 ]] || { echo "No p4 in $common_dir" ; exit 1 ;}
+[[ -f $common_dir/p4d ]] || { echo "No p4d in $common_dir" ; exit 1 ;}
 
 chmod 777 $common_dir/p4
 chmod 700 $common_dir/p4d
@@ -84,21 +93,16 @@ P4BLDNUM=`./p4 -V | grep -i Rev. | $AWK -F / '{print $4}' | awk '{print $1}'`
 P4DBLDNUM=`./p4d -V | grep -i Rev. | $AWK -F / '{print $4}' | awk '{print $1}'`
 CURRENT_RELNUM=`./p4d_${SDP_INSTANCE}_bin -V | grep -i Rev. | $AWK -F / '{print $3}'`
 
-LOGFILE=$LOGS/upgrade.log
-
-if [ -f $LOGFILE ]; then
-  rm -f $LOGFILE
-fi
 
 log "Start $P4SERVER Upgrade"
 
-[ -f p4_$P4RELNUM.$P4BLDNUM ] || cp p4 p4_$P4RELNUM.$P4BLDNUM
-[ -f p4d_$P4DRELNUM.$P4DBLDNUM ] || cp p4d p4d_$P4DRELNUM.$P4DBLDNUM
-[ -f p4_${P4RELNUM}_bin ] && unlink p4_${P4RELNUM}_bin
+[[ -f p4_$P4RELNUM.$P4BLDNUM ]] || cp p4 p4_$P4RELNUM.$P4BLDNUM
+[[ -f p4d_$P4DRELNUM.$P4DBLDNUM ]] || cp p4d p4d_$P4DRELNUM.$P4DBLDNUM
+[[ -f p4_${P4RELNUM}_bin ]] && unlink p4_${P4RELNUM}_bin
 ln -s p4_$P4RELNUM.$P4BLDNUM p4_${P4RELNUM}_bin   >> "$LOGFILE" 2>&1
-[ -f p4d_${P4DRELNUM}_bin ] && unlink p4d_${P4DRELNUM}_bin
+[[ -f p4d_${P4DRELNUM}_bin ]] && unlink p4d_${P4DRELNUM}_bin
 ln -s p4d_$P4DRELNUM.$P4DBLDNUM p4d_${P4DRELNUM}_bin   >> "$LOGFILE" 2>&1
-[ -f p4_bin ] && unlink p4_bin
+[[ -f p4_bin ]] && unlink p4_bin
 ln -s p4_${P4RELNUM}_bin p4_bin >> "$LOGFILE" 2>&1
 
 if [[ -L p4broker_${SDP_INSTANCE}_bin ]]; then
@@ -115,28 +119,28 @@ fi
 
 /p4/common/bin/p4login
 
-if [ "$P4REPLICA" == "FALSE" ] || [ $EDGESERVER -eq 1 ] ; then
-  get_journalnum
+if [[ "$P4REPLICA" == "FALSE" ]] || [[ $EDGESERVER -eq 1 ]]; then
+   get_journalnum
 fi
 
 stop_p4d
 
 # Don't upgrade the database for minor upgrades
-if [ $CURRENT_RELNUM != $P4DRELNUM ]; then
-  if [ "$P4REPLICA" == "FALSE" ] || [ $EDGESERVER -eq 1 ] ; then
-    if [ "$P4REPLICA" == "FALSE" ] ; then
-      truncate_journal
+if [[ $CURRENT_RELNUM != $P4DRELNUM ]]; then
+   if [[ "$P4REPLICA" == "FALSE" ]] || [[ $EDGESERVER -eq 1 ]]; then
+      if [[ "$P4REPLICA" == "FALSE" ]] ; then
+         truncate_journal
+         sleep 1
+      fi
+      replay_journal_to_offline_db
       sleep 1
-    fi
-    replay_journal_to_offline_db
-    sleep 1
-  fi
-  unlink p4d_${SDP_INSTANCE}_bin  >> "$LOGFILE" 2>&1
-  ln -s p4d_${P4DRELNUM}_bin p4d_${SDP_INSTANCE}_bin  >> "$LOGFILE" 2>&1
-  $P4DBIN -r $P4ROOT -J off -xu >> "$LOGFILE" 2>&1
-  if [ "$P4REPLICA" == "FALSE" ] || [ $EDGESERVER -eq 1 ] ; then
-    $P4DBIN -r $OFFLINE_DB -J off -xu >> "$LOGFILE" 2>&1
-  fi
+   fi
+   unlink p4d_${SDP_INSTANCE}_bin  >> "$LOGFILE" 2>&1
+   ln -s p4d_${P4DRELNUM}_bin p4d_${SDP_INSTANCE}_bin  >> "$LOGFILE" 2>&1
+   $P4DBIN -r $P4ROOT -J off -xu >> "$LOGFILE" 2>&1
+   if [[ "$P4REPLICA" == "FALSE" ]] || [[ $EDGESERVER -eq 1 ]]; then
+      $P4DBIN -r $OFFLINE_DB -J off -xu >> "$LOGFILE" 2>&1
+   fi
 fi
 
 start_p4d

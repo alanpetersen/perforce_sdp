@@ -1,0 +1,107 @@
+#########################################################
+####      CONFIGURATION VARIABLES: CHANGE AS NEEDED  ####
+####                                                 ####
+
+# The example section below shows all the values and their meaning. The
+# actual section values start below the commented section.
+
+# In particular, be sure to set/check the variables:
+# administrator, mailhost and complain_from. 
+
+# Section number. Copy the entire section of configuration variables foreach
+# instance of Perforce and change the section number for each instance.
+# [INSTANCE]
+
+# administrator=admin@company.com
+# Set this to the Perforce system administrator's
+# email address. The <administrator> will be notified
+# of problems with the script (e.g. invalid
+# email addresses for users). If <bcc_admin> is set
+# <administrator> will get a copy of all email the
+# script generates.
+
+# mailhost=mail.company.com
+# The hostname of the machine running your local SMTP server.
+
+# debug=0
+# If <debug> is true then messages go to stdout
+# and email is not actually sent to users. Instead,
+# all messages go to <administrator>, or no email
+# is sent at all if <administrator> = None. Setting
+# <debug> to larger values creates more output.
+
+# repeat=0
+# Set to 1 to repeat every <sleeptime> seconds.
+# Set to 0 to run just once - do this if running from cron.
+
+# sleeptime=60
+# Number of seconds to sleep between invocations
+# Irrelevant if <repeat>, above, is 0.
+
+# limit_emails=50
+# Don't send more than this many emails of
+# each type (job and change) at a time. This is
+# a safety feature that prevents runaway email.
+
+# notify_changes=1
+# notify_jobs=0
+# Set <notify_changes> to 0 to disable change notification completely.
+# Set <notify_jobs>  to 0 to disable job notification completely.
+# (Note that at least ONE of these should be set to true: otherwise
+# there's no reason to ever run this program!)
+
+# bcc_admin=0
+# Set to 1 to Bcc: ALL email to the administrator
+
+# send_to_author=0
+# Set to 1 to CC: email to the original author of the changelist or job
+
+# reply_to_admin=0
+# Set to 1 to set the emails Reply-To: field to the administrator
+
+# maildomain=None
+# If value is None, the script will look up the email
+# address for each Perforce user in the "p4 user"
+# data via "p4 user -o <username>". If, instead,
+# you set this variable <maildomain> to any domain
+# (like "yourcompany.com") then the review daemon
+# will assume that Perforce user <username> has
+# the email address <username>@<maildomain>.
+
+# jobpath=//depot/jobs
+# Send job review mail to users reviewing <jobpath>.
+# See "p4 help user" for more information.
+
+# datefield=Date
+# A job field used to determine which jobs users are notified
+# of changes to. When the review daemon runs, subscribing users are
+# notified of any jobs with a higher value in this field then the
+# value in the "jobreview" counter -- and when job notification is
+# completed, the "jobreview' counter is updated accordingly.
+#
+# This field needs to appear in your jobspec as a "date" field
+# with persistence "always". See "p4 help jobspec" for more
+# information.
+
+# servername=DNS_server_name
+# Used in the subject line for emails so people can tell which
+# server the email came from.
+
+[1]
+administrator=REPL_ADMINISTRATOR
+complain_from=REPL_COMPLAINFROM
+mailhost=REPL_MAILHOST
+debug=0
+repeat=0
+sleeptime=60
+limit_emails=50
+limit_description=5000
+notify_changes=1
+notify_jobs=0
+bcc_admin=0
+send_to_author=1
+reply_to_admin=0
+maildomain=None
+jobpath=//depot/jobs
+datefield=Date
+servername=REPL_DNSNAME

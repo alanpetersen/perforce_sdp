@@ -4,9 +4,10 @@ class perforce_sdp::base (
 ) inherits perforce_sdp::params {
   
   File {
-    owner => $osuser,
-    group => $osgroup,
-    mode  => '0600',
+    ensure => 'file',
+    owner  => $osuser,
+    group  => $osgroup,
+    mode   => '0600',
   }
   
   group { $osgroup:
@@ -34,10 +35,20 @@ class perforce_sdp::base (
     target => "${depotdata_dir}/common",
   }
 
-  exec { 'fix_links.sh':
-    path => "${p4_dir}/common/bin",
-    refreshonly => true,
-    user => $osuser,
-  }  
+  file { "${p4_dir}/common/config":
+    ensure => 'directory',
+  }
+  
+  file { "${p4_dir}/common/bin/p4_vars":
+    mode => '0700',
+    content => template('perforce_sdp/p4_vars.erb')
+  }
+
+  if $adminpass {
+    file { "${p4_dir}/common/bin/adminpass":
+      mode => '0400',
+      content => $adminpass,
+    }
+  }
   
 }

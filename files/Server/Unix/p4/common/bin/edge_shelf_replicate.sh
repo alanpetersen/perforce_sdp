@@ -49,16 +49,15 @@ for d in `$P4 -s depots|grep "^info: Depot " |\
    cut -d ' ' -f 3`; do
    echo === Started replication of //$d/... at $(date). >> $LOGFILE
    echo Running $P4 changes -s shelved //$d/... >> $LOGFILE
-   $P4 changes -s shelved //$d/... | cut -d " " -f 2 | while read cl;do
-     echo Running $P4 print //$d/...@=$cl >> $LOGFILE
-     $P4 print //$d/...@=$cl > /dev/null
+   $P4 changes -s shelved //$d/... | cut -d " " -f 2 | while read cl; do
+      echo Running $P4 print //$d/...@=$cl >> $LOGFILE
+      $P4 print //$d/...@=$cl > /dev/null
    done
 
    if [[ $? -ne 0 ]]; then
       STATUS="Error: Replication failed.  Review the log [$LOGFILE]."
       EXIT_CODE=1
    fi
-
 done
 
 echo Edge replication complated at $(date). >> $LOGFILE

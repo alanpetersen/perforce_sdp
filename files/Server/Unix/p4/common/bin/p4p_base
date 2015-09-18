@@ -30,18 +30,17 @@
 # Perforce proxy base init script
 
 # do nothing unless $SDP_INSTANCE is defined.
-if [ -z $SDP_INSTANCE ]
-then
+if [[ -z $SDP_INSTANCE ]]; then
    echo $SDP_INSTANCE
    echo "SDP_INSTANCE is invalid."
    exit 1
 fi
 
-if [ `$ID -u` = 0 ]; then
-  exec su - $OSUSER -c "$0 $1"
+if [[ `$ID -u` = 0 ]]; then
+   exec su - $OSUSER -c "$0 $1"
 elif [ "`$ID -u -n`" != $OSUSER ]; then
-  echo "$0 can only be run by root or $OSUSER"
-  exit 1
+   echo "$0 can only be run by root or $OSUSER"
+   exit 1
 fi
 
 # Souce in get_pids().

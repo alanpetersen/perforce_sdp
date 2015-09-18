@@ -1,0 +1,141 @@
+#------------------------------------------------------------------------------
+# Copyright (c) Perforce Software, Inc., 2007-2015. All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1  Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2.  Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PERFORCE
+# SOFTWARE, INC. BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+# THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#------------------------------------------------------------------------------
+
+# trap unbound variables
+set -u
+
+# Various scripts send email to $MAILTO.  This can contain comma-delimited list
+# of email addresses (no spaces).
+export MAILTO=REPL_MAILTO
+
+# Specify the email adddress from which emails are sent in $MAILFROM.
+# This must be exactly one email address.
+export MAILFROM=REPL_MAILFROM
+
+export P4USER=REPL_ADMINUSER
+export P4SERVICEUSER=REPL_SVCUSER
+export OSUSER=REPL_OSUSER
+export SDP_VERSION="REPL_SDPVERSION"
+
+export AWK=awk
+export CUT=cut
+export DF="df -h"
+export GREP=grep
+export ID=id
+export SDPMAIL=mail
+export PS=ps
+
+OS=`uname`
+if [ "${OS}" = "SunOS" ] ; then
+  export AWK=/usr/xpg4/bin/awk
+  export ID=/usr/xpg4/bin/id
+  export SDPMAIL=mailx
+elif [ "${OS}" = "AIX" ] ; then
+  export DF="df -m"
+fi
+
+# Which perforce instance are we configuring? Defaults to 1.
+export SDP_INSTANCE=${1:-1}
+
+# The P4INSTANCE variable is deprecated, and is maintained here for backward
+# compatibility.  The SDP_INSTANCE variable should be referenced instead, as
+# P4INSTANCE may go away in a future release.
+export P4INSTANCE=$SDP_INSTANCE
+export P4SERVER="p4_${SDP_INSTANCE}"
+export P4SSLDIR=/p4/ssl
+export P4HOME="/p4/${SDP_INSTANCE}"
+export TMP=${P4HOME}/tmp
+export P4TMP=${P4HOME}/tmp
+export P4ROOT=${P4HOME}/root
+export P4JOURNAL=${P4HOME}/logs/journal
+export P4CONFIG=${P4HOME}/.p4config
+export P4TICKETS=${P4HOME}/.p4tickets
+export P4TRUST=${P4HOME}/.p4trust
+export P4ENVIRO=${P4HOME}/.p4enviro
+export DEPOTS=${P4HOME}/depots
+export CHECKPOINTS=${P4HOME}/checkpoints
+export LOGS=${P4HOME}/logs
+export P4LOG=${LOGS}/log
+export P4LOGS=$P4HOME/logs
+export P4CBIN=/p4/common/bin
+export P4CLIB=/p4/common/lib
+export PERL5LIB=$P4CLIB:${PERL5LIB:-}
+export PERLHOME=/p4/common/perl
+export PYHOME=/p4/common/python
+export PATH=$P4HOME/bin:$P4CBIN:$PYHOME/bin:$PERLHOME/site/bin:$PERLHOME/bin:$PATH:.
+export MANPATH=$PERLHOME/site/man:$PERLHOME/man:${MANPATH:-}
+export SERVERID=`cat ${P4ROOT}/server.id`
+export SHAREDDATA=REPL_SHAREDDATA
+
+# P4Proxy Settings
+export P4PCACHE=$P4HOME/cache
+
+# Set KEEPCKPS to the number of checkpoint & journal files and their
+# corresponding log files to keep.  Checkpoints and their log file are
+# numbered with the same journal counter number.  Checkpoints/journals
+# and their logs are removed when daily_backup.bat or weekly_backup.bat
+# are run.  The live_checkpoint.bat script does not remove.
+#  Set KEEPCKPS=0 to avoid automated cleanup of checkpoints and logs.
+export KEEPCKPS=7
+
+# Set KEEPLOGS to the number of server logs to keep, counting back from
+# the most recent.  Server logs are numbered with their corresponding
+# journal counter number, since server logs are rotated when checkpoint
+# logs are rotated.  Keep in mind that if scripts are set to run
+# more than once per day, this will not correspond to the number
+# of days, just the number of iterations of script calls.
+# KEEPLOGS affects all log files other than checkpoint logs, which are
+# governed by KEEPCKPS.
+# Set KEEPLOGS=0 to avoid automated cleanup of old server logs.
+export KEEPLOGS=7
+
+# Don't change this; change or comment the above as needed
+export P4BIN=${P4HOME}/bin/p4_${SDP_INSTANCE}
+export P4DBIN=${P4HOME}/bin/p4d_${SDP_INSTANCE}
+export P4PBIN=${P4HOME}/bin/p4p_${SDP_INSTANCE}
+export P4BROKERBIN=${P4HOME}/bin/p4broker_${SDP_INSTANCE}
+export P4WEBBIN=${P4HOME}/bin/p4web_${SDP_INSTANCE}
+
+# Define *_VERSION values.  These will look like "2014.1.899321"
+# or "2015.1_BETA.903064".  For example, to specify behavior specific
+# to 2014.1 or later P4D, test with [[ "$P4D_VERSION" > "2014.1" ]].
+# That expression will be true 2014.1 and any subsequent release.  Since
+# the values contain the patch number, all releases of "2014.1.*" will
+# be greater than the string "2014.1", so "greater than or equal to" is
+# implied.
+[[ -x $P4BIN ]] && export P4_VERSION=$($P4BIN -V|$GREP ^Rev.|$CUT -d '/' -f 3).$($P4BIN -V|$GREP ^Rev.|$CUT -d '/' -f 4|$CUT -d ' ' -f 1)
+[[ -x $P4DBIN ]] && export P4D_VERSION=$($P4DBIN -V 2>/dev/null|$GREP ^Rev.|$CUT -d '/' -f 3).$($P4DBIN -V 2>/dev/null|$GREP ^Rev.|$CUT -d '/' -f 4|$CUT -d ' ' -f 1)
+# Set version values for optional executables.
+[[ -x $P4PBIN ]] && export P4P_VERSION=$($P4PBIN -V|$GREP ^Rev.|$CUT -d '/' -f 3).$($P4PBIN -V|$GREP ^Rev.|$CUT -d '/' -f 4|$CUT -d ' ' -f 1)
+[[ -x $P4BROKERBIN ]] && export P4BROKER_VERSION=$($P4BROKERBIN -V|$GREP ^Rev.|$CUT -d '/' -f 3).$($P4BROKERBIN -V|$GREP ^Rev.|$CUT -d '/' -f 4|$CUT -d ' ' -f 1)
+[[ -x $P4WEBBIN ]] && export P4WEB_VERSION=$($P4WEBBIN -V|$GREP ^Rev.|$CUT -d '/' -f 3).$($P4WEBBIN -V|$GREP ^Rev.|$CUT -d '/' -f 4|$CUT -d ' ' -f 1)
+
+# Sets instance specific vars.  Last so that the caller sees the error.
+if [ -f "/p4/common/config/${P4SERVER}.vars" ] ; then
+   . /p4/common/config/${P4SERVER}.vars
+fi
+

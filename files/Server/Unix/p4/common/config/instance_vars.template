@@ -1,0 +1,39 @@
+# If the server.id matches the name below, this instance runs as a relica.
+export P4REPLICANAME=REPL_REPNAME
+
+# P4MASTERNAME is server.id of Master for this instance
+export P4MASTERNAME=MASTER_NAME
+
+# This is the DNS name of the master server:
+export P4MASTER=REPL_DNSNAME
+
+# The setting below should be ssl: if this instance uses ssl.
+export SSL_PREFIX=REPL_SSLPREFIX
+
+export P4MASTERPORTNUM=REPL_P4PORT
+export P4PORT=${SSL_PREFIX}${P4MASTERPORTNUM}
+export P4BROKERPORTNUM=REPL_P4BROKERPORT
+export P4BROKERPORT=${SSL_PREFIX}${P4BROKERPORTNUM}
+export P4D_FLAGS="-p $P4PORT -r $P4ROOT -J $P4JOURNAL -L $P4LOG -q -d"
+export PROXY_TARGET=${SSL_PREFIX}${P4MASTER}:${P4MASTERPORTNUM}
+export PROXY_PORT=$P4PORT
+
+if [[ "$SERVERID" == "$P4MASTERNAME" ]]; then
+  export P4REPLICA=FALSE
+else
+  export P4REPLICA=TRUE
+fi
+
+# P4Web settings:
+export P4WEBBIN=${P4HOME}/bin/p4web_${SDP_INSTANCE}
+export P4WEBLOG=${P4HOME}/logs/p4web.log
+export P4WEBPORT=REPL_P4WEBPORT
+
+# Authenticated Browse only mode:
+export P4WEBARGS="-B -p $P4PORT -w $P4WEBPORT -U $OSUSER -L $P4WEBLOG"
+
+# P4FTP settings:
+export P4FTPPORT=REPL_P4FTPPORT
+export P4FTPBIN=${P4HOME}/bin/p4ftpd_${SDP_INSTANCE}
+export P4FTPLOG=${P4HOME}/logs/ftp.log
+export P4FTPARGS="-d -l $P4FTPPORT -p $P4PORT -u $OSUSER -L $P4FTPLOG"

@@ -38,4 +38,3 @@ fi
 ${P4BIN} -p ${SSL_PREFIX}${P4MASTER}:${P4MASTERPORTNUM} login < /p4/common/bin/adminpass
 ${P4BIN} -p ${SSL_PREFIX}${P4MASTER}:${P4MASTERPORTNUM} login ${P4SERVICEUSER}
 /p4/common/bin/p4login
-

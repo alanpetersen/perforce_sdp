@@ -55,27 +55,19 @@ fi
 . /p4/common/bin/backup_functions.sh
 
 checkpoint () {
-	log "Create a new checkpoint from the live db files."
-    # curly braces are necessary to capture the output of 'time'
-    { time $P4DBIN -r $P4ROOT -jc -Z ${CHECKPOINTS}/${P4SERVER}; } \
-        >>"$LOGFILE" 2>&1 || \
-	    { die "ERROR - New checkpoint failed!"; }
-}
-
-recreate_offline_db_files () {
-	log "Recreate offline db files from last checkpoint."
-	rm -f $OFFLINE_DB/db.*
-    # curly braces are necessary to capture the output of 'time'
-    { time $P4DBIN -r $OFFLINE_DB -J off -jr -z ${CHECKPOINTS}/${P4SERVER}.ckp.${CHECKPOINTNUM}.gz; } \
-        >>"$LOGFILE" 2>&1 || \
-	    { log "ERROR - Restore of checkpoint to $OFFLINE_DB failed!"; }
+   log "Create a new checkpoint from the live db files."
+   # curly braces are necessary to capture the output of 'time'
+   { time $P4DBIN -r $P4ROOT -jc -Z ${CHECKPOINTS}/${P4SERVER}; } \
+      >>"$LOGFILE" 2>&1 || \
+         { die "ERROR - New checkpoint failed!"; }
 }
 
 ######### Start of Script ##########
-
 check_vars
 set_vars
+check_uid
 check_dirs
+ckp_running
 /p4/common/bin/p4login
 get_journalnum
 rotate_last_run_logs
@@ -86,3 +78,5 @@ remove_old_checkpoints_and_journals
 remove_old_logs
 log "End $P4SERVER Checkpoint"
 mail_log_file "$HOSTNAME $P4SERVER live checkpoint log."
+set_counter
+ckp_complete

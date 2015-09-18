@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>p4d_1</short>
+  <description>Enable access to Helix Server on port 1666.</description>
+  <port protocol="tcp" port="1666"/>
+</service>

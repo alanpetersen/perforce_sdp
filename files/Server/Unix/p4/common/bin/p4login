@@ -25,5 +25,56 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #------------------------------------------------------------------------------
+set -u
 
-$P4BIN -p $P4PORT -u $P4USER login -a < /p4/common/bin/adminpass > /p4/${SDP_INSTANCE}/logs/p4login.log 2>&1
+# p4login generates a login ticket for the SDP super user.  It is called
+# from cron scripts, and so does not normally generate output to stdout or
+# stderr.
+#
+# Normally output (stdout and stderr) is logged in $LOGS/p4login.log,
+# unless unless SDP_INSTANCE isn't defined, in which case it bails
+# immediately.
+#
+# An exit code of 0 indicates a valid login ticket exists, while a
+# non-zero exit code indicates a failure to login.
+
+export SDP_INSTANCE=${SDP_INSTANCE:-Undefined}
+declare -i SDP_ALWAYS_LOGIN=${SDP_ALWAYS_LOGIN:-1}
+declare DateFormat='%a %Y-%m-%d %H:%M:%S %Z'
+declare Cmd=
+
+function bail () { echo -e "\nError: ${1:-Unknown Error}"; exit ${2:-1}; }
+
+[[ $SDP_INSTANCE == Undefined ]] && bail "Error: SDP_INSTANCE not defined."
+
+declare TicketExpiration=$($P4BIN -ztag -F %TicketExpiration% -p $P4PORT -u $P4USER login -s 2>/dev/null)
+declare Log=$LOGS/p4login.log
+echo "$(date +'%a %Y-%m-%d %H:%M:%S %Z'): Checking login status." > $Log
+
+if [[ $TicketExpiration =~ [0-9]+ ]]; then
+   # A 'long-term' ticket is one that expires more than a month (31 days + 1 second) from now.
+   if [[ $TicketExpiration -ge 2678401 ]]; then
+      echo "$(date +'%a %Y-%m-%d %H:%M:%S %Z'): Verified: User $P4USER logged into $P4PORT with a long-term ticket.  Login not required." >> $Log
+
+      if [[ $SDP_ALWAYS_LOGIN -eq 1 ]]; then
+         echo "Doing login anyway as SDP_ALWAYS_LOGIN is enabled." >> $Log
+         Cmd="$P4BIN -p $P4PORT -u $P4USER -s login -a"
+         echo Running: $Cmd >> $Log
+         $Cmd < /p4/common/bin/adminpass >> $Log 2>&1
+      fi
+
+      exit 0
+   else
+      echo "$(date +'%a %Y-%m-%d %H:%M:%S %Z'): Warning: User $P4USER logged into $P4PORT with a short-term ticket.  Attempting to extend." >> $Log
+      Cmd="$P4BIN -p $P4PORT -u $P4USER -s login -a"
+      echo Running: $Cmd >> $ Log
+      $Cmd < /p4/common/bin/adminpass >> $Log 2>&1
+      exit $?
+   fi
+else
+   echo "$(date +'%a %Y-%m-%d %H:%M:%S %Z'): Warning: User $P4USER is not logged into $P4PORT.  Attempting to login." >> $Log
+   Cmd="$P4BIN -p $P4PORT -u $P4USER -s login -a"
+   echo Running: $Cmd >> $Log
+   $Cmd < /p4/common/bin/adminpass >> $Log 2>&1
+   exit $?
+fi

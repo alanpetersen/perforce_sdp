@@ -34,6 +34,7 @@ if [[ $SDP_INSTANCE == Undefined ]]; then
    echo "You must supply the Perforce instance as a parameter to this script." 
    exit 1 
 fi 
+
 . /p4/common/bin/p4_vars $SDP_INSTANCE
 . /p4/common/bin/backup_functions.sh
 
@@ -42,6 +43,8 @@ check_vars
 set_vars
 
 LOGFILE=$LOGS/sync_replica.log
+
+check_uid
 
 $P4BIN -u $P4USER -p ${SSL_PREFIX}${P4MASTER}:${P4MASTERPORTNUM} login < /p4/common/bin/adminpass > /dev/null 2>&1
 JOURNALNUM=`$P4BIN -u $P4USER -p ${SSL_PREFIX}${P4MASTER}:${P4MASTERPORTNUM} counter journal`
@@ -55,11 +58,13 @@ log "Starting sync_replica.sh"
 
 # You must set up a public keypair using "ssh-keygen -t rsa" in order for this to work.
 # You need to paste your CLIENT ~/.ssh/id_rsa.pub contents into the REMOTE ~/ssh/authorized_keys file. 
-rsync -avz --delete ${OSUSER}@${P4MASTER}:$CHECKPOINTS/ $CHECKPOINTS > $LOGFILE 2>&1
-rsync_exit_code=$?
+if [[ "$SHAREDDATA" == "FALSE" ]]; then
+  rsync -avz --delete ${OSUSER}@${P4MASTER}:$CHECKPOINTS/ $CHECKPOINTS > $LOGFILE 2>&1
+  rsync_exit_code=$?
 
-if [[ $rsync_exit_code -ne 0 ]]; then
-   die "Error: Failed to pull $CHECKPOINTS from host $P4MASTER.  The rsync exit code was: $rsync_exit_code.  Aborting."
+  if [[ $rsync_exit_code -ne 0 ]]; then
+    die "Error: Failed to pull $CHECKPOINTS from host $P4MASTER.  The rsync exit code was: $rsync_exit_code.  Aborting."
+  fi
 fi
 
 recreate_weekly_offline_db_files
@@ -70,6 +75,7 @@ $P4BIN -p ${SSL_PREFIX}${P4MASTERPORTNUM} login < /p4/common/bin/adminpass > /de
 
 check_disk_space
 remove_old_logs
-log "End $P4SERVER Checkpoint"
+export CHECKPOINTS=${P4HOME}/checkpoints.rep
+remove_old_checkpoints_and_journals
+log "End $P4SERVER sync replica"
 mail_log_file "$HOSTNAME $P4SERVER Daily sync replica log."
-

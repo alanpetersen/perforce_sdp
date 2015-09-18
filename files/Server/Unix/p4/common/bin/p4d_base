@@ -38,14 +38,14 @@ fi
 
 export TMP=$P4TMP
 
-if [ ! -x $P4DBIN ] ; then
+if [[ ! -x $P4DBIN ]] ; then
    echo "$P4DBIN is not executable."
    exit 2;
 fi
 
-if [ `$ID -u` = 0 ]; then
+if [[ `$ID -u` = 0 ]]; then
    exec su - $OSUSER -c "$0 $1"
-elif [ "`$ID -u -n`" != $OSUSER ]; then
+elif [[ "`$ID -u -n`" != $OSUSER ]]; then
    echo "$0 can only be run by root or $OSUSER"
    exit 1
 fi
@@ -77,17 +77,19 @@ case "$1" in
       $P4DBIN $P4D_FLAGS
    ;;
    status)
-	$P4BIN -p $P4PORT -u $P4USER info -s
+      $P4BIN -p $P4PORT -u $P4USER info -s
    ;;
    stop)
-	echo -n "Shutting down $P4DBIN: "
-	$P4BIN -p $P4PORT -u $P4USER login < /p4/common/bin/adminpass
-	$P4BIN -p $P4PORT -u $P4USER admin stop
-	echo
+      echo -n "Shutting down $P4DBIN: "
+      if [[ "${P4REPLICA}" == "FALSE" ]]; then
+         $P4BIN -p $P4PORT -u $P4USER login < /p4/common/bin/adminpass
+      fi
+      $P4BIN -p $P4PORT -u $P4USER admin stop
+      echo
    ;;
    restart)
-	$0 stop
-	$0 start
+      $0 stop
+      $0 start
    ;;
    *)
       echo "Usage: $0 {start|stop|status|restart|force_start}"

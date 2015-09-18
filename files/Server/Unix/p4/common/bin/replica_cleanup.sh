@@ -49,6 +49,7 @@ if [[ $SDP_INSTANCE == Undefined ]]; then
    echo "You must supply the Perforce instance as a parameter to this script." 
    exit 1 
 fi 
+
 . /p4/common/bin/p4_vars $SDP_INSTANCE
 . /p4/common/bin/backup_functions.sh
 
@@ -56,16 +57,19 @@ fi
 
 check_vars
 set_vars
+check_uid
 check_dirs
 /p4/common/bin/p4login
 get_journalnum
 rotate_last_run_logs
 log "Start $P4SERVER log cleanup"
 remove_old_checkpoints_and_journals
+
 if [[ -d ${P4HOME}/checkpoints.rep ]]; then
-	export CHECKPOINTS=${P4HOME}/checkpoints.rep
-	remove_old_checkpoints_and_journals
+   export CHECKPOINTS=${P4HOME}/checkpoints.rep
+   remove_old_checkpoints_and_journals
 fi
+
 check_disk_space
 remove_old_logs
 log "End $P4SERVER log cleanup"

@@ -1,0 +1,57 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+our_domain = "p4sdp.com"
+sdp_config = (JSON.parse(File.read("sdp_test_config.json")))
+
+class SDPError < Vagrant::Errors::VagrantError
+  error_key "SDP Configuration error"
+end
+if !sdp_config.has_key?("oses")
+  raise SDPError.new("Please define boxes in JSON file")
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
+  sdp_config['oses'].each do |os|
+    osname = os['osname']
+    os['nodes'].each do |node|
+      hostname = "#{osname}-#{node[':nodename']}"
+      os_bootstrap = "bootstrap-#{osname}.sh"
+      config.vm.define hostname.to_sym do |machine|
+        if Vagrant.has_plugin?("vagrant-cachier")
+          machine.cache.scope = :box
+        end
+        machine.vm.box = os['box']
+        machine.vm.box_url =  os['box_url']
+        machine.vm.synced_folder "./sdp", "/sdp"
+        # Set the root password to 'vagrant'
+        machine.vm.provision "shell", inline: "echo 'root:vagrant' | sudo chpasswd"
+
+        # OS specific and common bootstrap/provisioning
+        machine.vm.provision :shell, :path => os_bootstrap
+        machine.vm.provision :shell, :path => "bootstrap-sdp-tests.sh"
+        machine.vm.network :private_network, ip: node[':ip']
+        if node.has_key?(":forwarded_port")
+            ports = node[':forwarded_port']
+	        machine.vm.network :forwarded_port, guest: ports['guest'], host: ports['host']
+	    end
+        machine.vm.hostname = hostname + "." + our_domain
+        if Vagrant.has_plugin?("vagrant-hostmanager")
+            machine.hostmanager.aliases = ["#{hostname}.localdomain", "#{hostname}"]
+        end
+      end
+    end
+  end
+
+end

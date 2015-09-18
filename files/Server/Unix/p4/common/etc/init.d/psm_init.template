@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Use chkconfig --add psm to set up the script to start and stop automatically.
+# Perforce Init Script.
+# chkconfig: 345 91 29
+# description: Start Perforce instance 1 monitor
+
+OSUSER=perforce
+ID=id
+INSTANCE=1
+
+if [ `$ID -u` = 0 ]; then
+   exec su - $OSUSER -c "$0 $1"
+elif [ "`$ID -u -n`" != $OSUSER ]; then
+   echo "$0 can only be run by root or $OSUSER"
+   exit 1
+fi
+
+export PSM_ROOT=/p4/${INSTANCE}/psm/
+export RACK_ENV=production
+
+pid=0
+GetPID() {
+     pid=`ps ax | grep ruby | grep psm | grep -v grep | awk '{print $1;}'`
+}
+
+Status() {
+     GetPID
+     if [ "q$pid" = q ] ; then
+      echo "psm is stopped"
+     else
+      echo "psm ($pid) is running"
+     fi
+     exit 0
+}
+
+Start() {
+     psm &
+     exit $?
+}
+
+Stop() {
+     GetPID
+     kill $pid
+     exit $?
+}
+
+Usage() {
+     echo Usage $1 start\|stop
+     exit 100
+}
+
+if [ $# != 1 ] ; then
+     Usage
+fi
+case $1 in
+     reload)
+      GetPID
+      kill -HUP $pid
+      opid=$pid
+      GetPID
+      if [ "q$pid" != q -a $pid = $opid ] ; then
+        echo "psm reloaded"
+      else
+        echo "psm not running"
+      fi
+      ;;
+     restart)
+      Stop
+      Start
+      ;;
+     start)
+      Start
+      ;;
+     status)
+      Status
+      ;;
+     stop)
+      Stop
+      ;;
+     *)
+      Usage
+      ;;
+esac
+

@@ -65,7 +65,6 @@ for d in `$P4 -s depots|grep "^info: Depot " |\
       STATUS="Error: Verify attempt failed.  Review the log [$LOGFILE]."
       EXIT_CODE=1
    fi
-
 done
 
 for d in `$P4 -s depots| grep "^info: Depot " | grep --perl-regexp "^info: Depot \S+ \d{4}\/\d{2}\/\d{2} unload" | cut -d " " -f 3 `; do
@@ -82,15 +81,12 @@ for d in `$P4 -s depots| grep "^info: Depot " | grep --perl-regexp "^info: Depot
       STATUS="Error: Verify attempt failed.  Review the log [$LOGFILE]."
       EXIT_CODE=1
    fi
-
 done
-
-
 
 if [[ $EXIT_CODE -eq 0 ]]; then
    if [[ -n "$(grep BAD! $LOGFILE)" || -n "$(grep MISSING! $LOGFILE)" || -n "$(grep p4\ help\ max $LOGFILE)" ]]; then
-       STATUS="Warning: Verify errors detected.  Review the log [$LOGFILE]."
-       EXIT_CODE=1
+      STATUS="Warning: Verify errors detected.  Review the log [$LOGFILE]."
+      EXIT_CODE=1
    fi
 fi
  

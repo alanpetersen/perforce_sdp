@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------------------------------------------------------
-# Copyright (c) Perforce Software, Inc., 2007-2014. All rights reserved
+# Copyright (c) Perforce Software, Inc., 2007-2015. All rights reserved
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,7 @@
 export P4U_HOME=${P4U_HOME:-/p4/common/bin}
 export P4U_LIB=${P4U_LIB:-/p4/common/lib}
 export P4U_ENV=$P4U_LIB/p4u_env.sh
-export P4U_LOG="/tmp/template.sh.$(date +'%Y%m%d-%H%M%S').log"
+export P4U_LOG="/tmp/template.$(date +'%Y%m%d-%H%M%S').log"
 export VERBOSITY=${VERBOSITY:-3}
 
 # Environment isolation.  For stability and security reasons, prepend
@@ -54,11 +54,6 @@ BASH_LIBS+=" $P4U_LIB/libp4u.sh"
 for bash_lib in $BASH_LIBS; do
    source $bash_lib
 done
-
-
-. $P4U_ENV
-. $P4U_LIB/libcore.sh
-. $P4U_LIB/libp4u.sh
 
 declare Version=1.0.0
 declare -i SilentMode=0

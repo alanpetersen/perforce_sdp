@@ -37,41 +37,40 @@ fi
 . /p4/common/bin/backup_functions.sh
 
 recreate_offline_db_files_2013.3 () {
-    log "Recreate offline db files for 2013.3 upgrade process."
-    rm -f ${OFFLINE_DB}/db.* >> "$LOGFILE"
-    # curly braces are necessary to capture the output of 'time'
-    # if $P4DBIN is not a link, then it is a wrapper around p4d with the -C1 flag.
-    if [ ! -L $P4DBIN ]; then
-        { time /p4/common/bin/p4d_${P4DRELNUM}_bin -C1 -r $OFFLINE_DB -J off -jr -z ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz; } >> "$LOGFILE" 2>&1 || \
-	    { log "ERROR - Restore of checkpoint to $OFFLINE_DB failed!"; }
-    else
-        { time /p4/common/bin/p4d_${P4DRELNUM}_bin -r $OFFLINE_DB -J off -jr -z ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz; } >> "$LOGFILE" 2>&1 || \
-	    { log "ERROR - Restore of checkpoint to $OFFLINE_DB failed!"; }
+   log "Recreate offline db files for 2013.3 upgrade process."
+   rm -f ${OFFLINE_DB}/db.* >> "$LOGFILE"
+   # curly braces are necessary to capture the output of 'time'
+   # if $P4DBIN is not a link, then it is a wrapper around p4d with the -C1 flag.
+   if [[ ! -L $P4DBIN ]]; then
+      { time /p4/common/bin/p4d_${P4DRELNUM}_bin -C1 -r $OFFLINE_DB -J off -jr -z ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz; } >> "$LOGFILE" 2>&1 || \
+         { log "ERROR - Restore of checkpoint to $OFFLINE_DB failed!"; }
+   else
+      { time /p4/common/bin/p4d_${P4DRELNUM}_bin -r $OFFLINE_DB -J off -jr -z ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz; } >> "$LOGFILE" 2>&1 || \
+         { log "ERROR - Restore of checkpoint to $OFFLINE_DB failed!"; }
    fi
 }
 
 switch_db_files () {
-	log "Switching out db files..."
-        [ -d $SAVEDIR ] || mkdir -p $SAVEDIR
-	rm -f $SAVEDIR/db.* >> $LOGFILE 2>&1
-	mv $P4ROOT/db.* $SAVEDIR >> $LOGFILE 2>&1
-	mv $OFFLINE_DB/db.* $P4ROOT >> $LOGFILE 2>&1 || die "Move of offline db file to $P4ROOT failed."
+   log "Switching out db files..."
+   [[ -d $SAVEDIR ]] || mkdir -p $SAVEDIR
+   rm -f $SAVEDIR/db.* >> $LOGFILE 2>&1
+   mv $P4ROOT/db.* $SAVEDIR >> $LOGFILE 2>&1
+   mv $OFFLINE_DB/db.* $P4ROOT >> $LOGFILE 2>&1 || die "Move of offline db file to $P4ROOT failed."
 }
-
 
 AWK=awk
 ID=id
 MAIL=mail
 
 OS=`uname`
-if [ "${OS}" = "SunOS" ] ; then
-  AWK=/usr/xpg4/bin/awk
-  ID=/usr/xpg4/bin/id
-  MAIL=mailx
-elif [ "${OS}" = "AIX" ] ; then
-  AWK=awk
-  ID=id
-  MAIL=mail
+if [[ "${OS}" = "SunOS" ]]; then
+   AWK=/usr/xpg4/bin/awk
+   ID=/usr/xpg4/bin/id
+   MAIL=mailx
+elif [[ "${OS}" = "AIX" ]]; then
+   AWK=awk
+   ID=id
+   MAIL=mail
 fi
 
 export AWK
@@ -81,21 +80,30 @@ export MAIL
 cd /p4/common/bin
 common_dir=`pwd -P` 
 
-if [ -d $common_dir ]; then
-  cd $common_dir
+if [[ -d $common_dir ]]; then
+   cd $common_dir
 else
-  echo $common_dir does not exist.
-  exit 1
+   echo $common_dir does not exist.
+   exit 1
 fi
 
 ######### Start of Script ##########
 
 check_vars
 set_vars
-check_dirs
 
-[ -f $common_dir/p4 ] || { echo "No p4 in $common_dir" ; exit 1 ;}
-[ -f $common_dir/p4d ] || { echo "No p4d in $common_dir" ; exit 1 ;}
+# override LOGFILE setting from set_vars which will point to checkpoint.log
+LOGFILE=$LOGS/upgrade.log
+
+if [[ -f $LOGFILE ]]; then
+   rm -f $LOGFILE
+fi
+
+check_dirs
+check_uid
+
+[[ -f $common_dir/p4 ]] || { echo "No p4 in $common_dir" ; exit 1 ;}
+[[ -f $common_dir/p4d ]] || { echo "No p4d in $common_dir" ; exit 1 ;}
 
 chmod 777 $common_dir/p4
 chmod 700 $common_dir/p4d
@@ -106,27 +114,21 @@ P4BLDNUM=`./p4 -V | grep -i Rev. | $AWK -F / '{print $4}' | awk '{print $1}'`
 P4DBLDNUM=`./p4d -V | grep -i Rev. | $AWK -F / '{print $4}' | awk '{print $1}'`
 CURRENT_RELNUM=`./p4d_${SDP_INSTANCE}_bin -V | grep -i Rev. | $AWK -F / '{print $3}'`
 
-LOGFILE=$LOGS/upgrade.log
-
-if [ -f $LOGFILE ]
-then
-        rm -f $LOGFILE
-fi
 
 log "Start $P4SERVER Upgrade"
 
 /p4/common/bin/p4login
 get_journalnum
 
-[ -f ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz ] || { echo "Checkpoint ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz missing!" ; exit 1 ;}
+[[ -f ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz ]] || { echo "Checkpoint ${CHECKPOINTS}/${P4SERVER}.ckp.${JOURNALNUM}.gz missing!" ; exit 1 ;}
 
-[ -f p4_$P4RELNUM.$P4BLDNUM ] || cp p4 p4_$P4RELNUM.$P4BLDNUM
-[ -f p4d_$P4DRELNUM.$P4DBLDNUM ] || cp p4d p4d_$P4DRELNUM.$P4DBLDNUM
-[ -f p4_${P4RELNUM}_bin ] && unlink p4_${P4RELNUM}_bin
+[[ -f p4_$P4RELNUM.$P4BLDNUM ]] || cp p4 p4_$P4RELNUM.$P4BLDNUM
+[[ -f p4d_$P4DRELNUM.$P4DBLDNUM ]] || cp p4d p4d_$P4DRELNUM.$P4DBLDNUM
+[[ -f p4_${P4RELNUM}_bin ]] && unlink p4_${P4RELNUM}_bin
 ln -s p4_$P4RELNUM.$P4BLDNUM p4_${P4RELNUM}_bin   >> "$LOGFILE" 2>&1
-[ -f p4d_${P4DRELNUM}_bin ] && unlink p4d_${P4DRELNUM}_bin
+[[ -f p4d_${P4DRELNUM}_bin ]] && unlink p4d_${P4DRELNUM}_bin
 ln -s p4d_$P4DRELNUM.$P4DBLDNUM p4d_${P4DRELNUM}_bin   >> "$LOGFILE" 2>&1
-[ -f p4_bin ] && unlink p4_bin
+[[ -f p4_bin ]] && unlink p4_bin
 ln -s p4_${P4RELNUM}_bin p4_bin >> "$LOGFILE" 2>&1
 
 recreate_offline_db_files_2013.3

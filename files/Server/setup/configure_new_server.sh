@@ -83,10 +83,6 @@ p4 depot -o unload | sed 's/^Type:\tlocal/Type: unload/g' | p4 depot -i
 # For p4d 2013.1+
 [[ "$P4D_VERSION" > "2013.1" ]] && p4 configure set server.maxcommands=2500
 
-# For p4d 2012.2+, set net.maxwait to drop a client connection if waits
-# too long for any single network read or write.
-[[ "$P4D_VERSION" > "2012.2" ]] && p4 configure set net.maxwait=600
-
 # For p4d 2013.2+ -Turn off max* commandline overrides.
 [[ "$P4D_VERSION" > "2013.2" ]] && p4 configure set server.commandlimits=2
 

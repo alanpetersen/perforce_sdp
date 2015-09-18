@@ -1,10 +1,10 @@
 #!/usr/bin/env python2.7
 # -*- encoding: utf-8 -*-
 
-'''$Id: //guest/perforce_software/sdp/main/Server/Unix/p4/common/bin/p4review2.py#1 $
-$Change: 12377 $
-$DateTime: 2015/04/15 23:00:31 $
-$Author: lester_cheung $
+'''$Id: //streams/master/main/Server/Unix/p4/common/bin/p4review2.py#1 $
+$Change: 4 $
+$DateTime: 2015/08/17 18:32:45 $
+$Author: alan_petersen $
 
 This is/will be a complete rewrite of the original Perforce review
 daemon.
