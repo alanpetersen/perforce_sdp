@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<service>
-  <short>p4broker_1</short>
-  <description>Enable access to Helix Broker on port 1667.</description>
-  <port protocol="tcp" port="1667"/>
-</service>

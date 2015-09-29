@@ -7,7 +7,7 @@
 #   returns revision information from output of "p4d -V"
 #
 # Caveats:
-#   none
+#   p4d must be found on the standard path
 #
 # Notes:
 #   None

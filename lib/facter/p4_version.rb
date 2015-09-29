@@ -7,7 +7,7 @@
 #   returns revision information from output of "p4 -V"
 #
 # Caveats:
-#   none
+#   p4 must be found on the standard path
 #
 # Notes:
 #   None

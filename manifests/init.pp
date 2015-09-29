@@ -10,7 +10,7 @@
 #
 # Sample Usage:
 #
-class perforce_sdp (
+class perforce (
   $osuser           = $perforce_sdp::params::osuser,
   $osgroup          = $perforce_sdp::params::osgroup,
   $adminuser        = $perforce_sdp::params::adminuser,
@@ -23,6 +23,6 @@ class perforce_sdp (
   $p4_version       = $perforce_sdp::params::p4_version,
   $p4d_version      = $perforce_sdp::params::p4d_version,
   $p4broker_version = $perforce_sdp::params::p4broker_version,
-) inherits perforce_sdp::params {
-  include perforce_sdp::client
+  $source_base      = $perforce_sdp::params::source_base,
+) inherits perforce::params {
 }

@@ -1,8 +1,0 @@
-adminpass
-servicepass
-ropass
-p4broker.log
-.p4config*
-data/*
-__pycache__/*
-*~
