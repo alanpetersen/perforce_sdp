@@ -12,19 +12,21 @@
 # Notes:
 #   None
 
-Facter.add(:p4_version) do
-  version='N/A'
-  if Facter::Util::Resolution.which('p4')
-    Facter::Util::Resolution.exec('p4 -V 2>&1').lines.each do |line|
-      if(line.start_with?("Rev."))
-        parts = line.sub(/Rev\. /,'').split('/')
-        major = parts[2]
-        build = parts[3].split(' ')[0]
-        version = major + "." + build
+if Facter::Util::Resolution.which('p4')
+  Facter.add(:p4_version) do
+    version='N/A'
+    if Facter::Util::Resolution.which('p4')
+      Facter::Util::Resolution.exec('p4 -V 2>&1').lines.each do |line|
+        if(line.start_with?("Rev."))
+          parts = line.sub(/Rev\. /,'').split('/')
+          major = parts[2]
+          build = parts[3].split(' ')[0]
+          version = major + "." + build
+        end
       end
     end
-  end
-  setcode do
-    version
+    setcode do
+      version
+    end
   end
 end

@@ -6,14 +6,14 @@ class perforce::client (
   $staging_base_path    = $perforce::params::staging_base_path,
 ) inherits perforce::params {
 
-  $source_location = "${source_location_base}/${p4_version_short}/${dist_dir_base}/p4"
+  $source_location = "${source_location_base}/r${p4_version_short}/${dist_dir_base}/p4"
 
   if(!defined(Class['staging'])) {
     class { 'staging':
       path  => $staging_base_path,
     }
   }
-  
+
   staging::file { 'p4':
     source => $source_location,
   }

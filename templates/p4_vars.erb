@@ -34,7 +34,7 @@ export MAILFROM=<%= @mailfrom %>
 export P4USER=<%= @adminuser %>
 export P4SERVICEUSER=<%= @serviceuser %>
 export OSUSER=<%= @osuser %>
-export SDP_VERSION=<%= @sdpversion %>
+export SDP_VERSION="<%= @sdp_version %>"
 
 AWK=awk
 CUT=cut
@@ -137,4 +137,3 @@ export P4WEBBIN=${P4HOME}/bin/p4web_${SDP_INSTANCE}
 if [ -f "/p4/common/config/${P4SERVER}.vars" ] ; then
    . /p4/common/config/${P4SERVER}.vars
 fi
-

@@ -65,15 +65,30 @@ class perforce::sdp_base (
     require => Staging::File[$sdp_distro],
   }
 
+  file { "${p4_dir}/Version":
+    source  => "file:///${depotdata_dir}/sdp/Version",
+    require => Staging::Extract[$sdp_distro],
+  }
+
   file { "${depotdata_dir}/common":
     mode    => '0700',
     source  => "file:///${depotdata_dir}/sdp/Server/${sdp_type}/p4/common",
     recurse => true,
+    require => Staging::Extract[$sdp_distro],
   }
 
   file { "${p4_dir}/common":
     ensure => 'symlink',
     target => "${depotdata_dir}/common",
+  }
+
+  file { "${p4_dir}/sdp":
+    ensure => 'symlink',
+    target => "${depotdata_dir}/sdp",
+  }
+
+  file { "${p4_dir}/ssl":
+    ensure => 'directory',
   }
 
   file { "${p4_dir}/common/config":

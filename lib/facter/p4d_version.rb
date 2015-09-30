@@ -12,9 +12,9 @@
 # Notes:
 #   None
 
-Facter.add(:p4d_version) do
-  version='N/A'
-  if Facter::Util::Resolution.which('p4d')
+if Facter::Util::Resolution.which('p4d')
+  Facter.add(:p4d_version) do
+    version='N/A'
     Facter::Util::Resolution.exec('p4d -V 2>&1').lines.each do |line|
       if(line.start_with?("Rev."))
         parts = line.sub(/Rev\. /,'').split('/')
@@ -23,8 +23,8 @@ Facter.add(:p4d_version) do
         version = major + "." + build
       end
     end
-  end
-  setcode do
-    version
+    setcode do
+      version
+    end
   end
 end
