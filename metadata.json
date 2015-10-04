@@ -1,10 +1,10 @@
 {
-  "name": "alanpetersen-perforce_sdp",
+  "name": "alanpetersen-perforce",
   "version": "1.0.0",
   "author": "Alan Petersen",
-  "summary": "Installs and configures a single-instance Perforce Server Deployment Package",
+  "summary": "Installs and configures the Perforce Server Deployment Package",
   "license": "Apache-2.0",
-  "source": "",
+  "source": "https://swarm.workshop.perforce.com/files/guest/alan_petersen/puppet/modules/perforce",
   "project_page": "",
   "tags": ["perforce"],
   "dependencies": [
@@ -23,15 +23,6 @@
       "operatingsystemrelease": [
         "6",
         "7"
-      ]
-    },
-    {
-      "operatingsystem": "Windows",
-      "operatingsystemrelease": [
-        "Server 2008",
-        "Server 2008 R2",
-        "Server 2012",
-        "Server 2012 R2"
       ]
     }
   ]

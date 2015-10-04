@@ -7,6 +7,8 @@ if [ "$EXE" = "" ]; then
     exit 1
 fi
 
+echo "running as $(id)" >> /tmp/create_links.log
+
 common_dir=/p4/common/bin
 
 if [ -d $common_dir ]; then

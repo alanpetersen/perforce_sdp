@@ -3,11 +3,13 @@ class perforce::params {
   $osgroup                = 'perforce'
   $adminuser              = 'p4admin'
   $adminpass              = undef
+  $mail_to                = 'p4admins'
+  $mail_from              = 'p4admin'
   $p4_dir                 = '/p4'
   $depotdata_dir          = '/depotdata'
   $metadata_dir           = '/metadata'
   $logs_dir               = '/logs'
-  $sslprefix              = undef
+  $ssl_prefix             = undef
   $sdp_version            = 'Rev. SDP/MultiArch/2015.1/15810 (2015/09/21).'
   $p4_version             = '2015.1'
   $p4d_version            = '2015.1'

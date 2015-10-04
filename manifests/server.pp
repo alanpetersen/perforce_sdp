@@ -21,27 +21,35 @@ class perforce::server (
   if $install_dir == undef {
     if defined(Class['perforce::sdp_base']) {
       $actual_install_dir = "${perforce::sdp_base::p4_dir}/common/bin"
+      $p4d_owner = $perforce::sdp_base::osuser
+      $p4d_group = $perforce::sdp_base::osgroup
+      exec { 'create_p4d_links':
+        command     => "${p4_dir}/common/bin/create_links.sh p4d",
+        cwd         => "${p4_dir}/common/bin",
+        refreshonly => true,
+        user        => $p4d_owner,
+        group       => $p4_group,
+        subscribe   => File['p4d'],
+      }
     } else {
       $actual_install_dir = $default_install_dir
+      $p4d_owner = 'root'
+      $p4d_group = 'root'
     }
   } else {
     $actual_install_dir = $install_dir
+    $p4d_owner = 'root'
+    $p4d_group = 'root'
   }
 
   file {'p4d':
     ensure  => file,
     path    => "${actual_install_dir}/p4d",
-    mode    => '0755',
+    mode    => '0700',
+    owner   => $p4d_owner,
+    group   => $p4d_group,
     source  => "file:///${staging_base_path}/perforce/p4d",
     require => Staging::File['p4d'],
   }
-
-  # exec { 'create_p4d_links':
-  #   command     => "${p4_dir}/common/bin/create_links.sh p4d",
-  #   cwd         => "${p4_dir}/common/bin",
-  #   refreshonly => true,
-  #   user        => $osuser,
-  #   subscribe   => File['p4d'],
-  # }
 
 }

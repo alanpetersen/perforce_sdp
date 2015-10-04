@@ -1,14 +1,14 @@
 # If the server.id matches the name below, this instance runs as a replica.
-export P4REPLICANAME=<%= @replicaname %>
+export P4REPLICANAME=<%= @replica_name %>
 
 # P4MASTERNAME is server.id of Master for this instance
-export P4MASTERNAME=<%= @mastername %>
+export P4MASTERNAME=<%= @master_name %>
 
 # This is the DNS name of the master server:
 export P4MASTER=<%= @master_dns %>
 
 # The setting below should be ssl: if this instance uses ssl.
-export SSL_PREFIX=<%= @sslprefix %>
+export SSL_PREFIX=<%= @ssl_prefix %>
 
 export P4MASTERPORTNUM=<%= @p4port %>
 export P4PORT=${SSL_PREFIX}${P4MASTERPORTNUM}

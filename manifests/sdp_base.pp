@@ -3,6 +3,8 @@ class perforce::sdp_base (
   $osgroup              = $perforce::params::osgroup,
   $adminuser            = $perforce::params::adminuser,
   $adminpass            = $perforce::params::adminpass,
+  $mail_to              = $perforce::params::mail_to,
+  $mail_from            = $perforce::params::mail_from,
   $p4_dir               = $perforce::params::p4_dir,
   $depotdata_dir        = $perforce::params::depotdata_dir,
   $metadata_dir         = $perforce::params::metadata_dir,
@@ -34,17 +36,17 @@ class perforce::sdp_base (
     ensure => 'directory',
   }
 
-  $depotdata_dir_expanded = splitpath($depotdata_dir)
+  $depotdata_dir_expanded = splitpath("$depotdata_dir/p4")
   file { $depotdata_dir_expanded:
     ensure => 'directory',
   }
 
-  $metadata_dir_expanded = splitpath($metadata_dir)
+  $metadata_dir_expanded = splitpath("$metadata_dir/p4")
   file { $metadata_dir_expanded:
     ensure => 'directory',
   }
 
-  $logs_dir_expanded = splitpath($logs_dir)
+  $logs_dir_expanded = splitpath("$logs_dir/p4")
   file { $logs_dir_expanded:
     ensure => 'directory',
   }
@@ -74,6 +76,18 @@ class perforce::sdp_base (
     mode    => '0700',
     source  => "file:///${depotdata_dir}/sdp/Server/${sdp_type}/p4/common",
     recurse => true,
+    require => Staging::Extract[$sdp_distro],
+  }
+
+  file { "${depotdata_dir}/common/bin/create_links.sh":
+    mode    => '0700',
+    source  => 'puppet:///modules/perforce/create_links.sh',
+    require => Staging::Extract[$sdp_distro],
+  }
+
+  file { "${depotdata_dir}/common/bin/p4d_base":
+    mode    => '0700',
+    source  => 'puppet:///modules/perforce/p4d_base',
     require => Staging::Extract[$sdp_distro],
   }
 

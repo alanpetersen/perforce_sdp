@@ -31,7 +31,7 @@
 # chkconfig: - 90 30
 # description: Start Perforce broker instance <%= @instanceName %>
 
-source /p4/common/bin/p4_vars <%= @instanceName %> || exit 1
+source /p4/common/bin/p4_vars <%= @instance_name %> || exit 1
 
 export P4BROKERCFG=/p4/common/config/${P4SERVER}.broker.cfg
 

@@ -29,8 +29,8 @@
 set -u
 
 # Mail to the administrator gets sent here:
-export MAILTO=<%= @mailto %>
-export MAILFROM=<%= @mailfrom %>
+export MAILTO=<%= @mail_to %>
+export MAILFROM=<%= @mail_from %>
 export P4USER=<%= @adminuser %>
 export P4SERVICEUSER=<%= @serviceuser %>
 export OSUSER=<%= @osuser %>
@@ -88,7 +88,9 @@ export PERLHOME=/p4/common/perl
 export PYHOME=/p4/common/python
 export PATH=$P4HOME/bin:$P4CBIN:$PYHOME/bin:$PERLHOME/site/bin:$PERLHOME/bin:$PATH:.
 export MANPATH=$PERLHOME/site/man:$PERLHOME/man:${MANPATH:-}
-export SERVERID=`cat ${P4ROOT}/server.id`
+if [ -e ${P4ROOT}/server.id ]; then
+  export SERVERID=`cat ${P4ROOT}/server.id`
+fi
 
 # P4Proxy Settings
 export P4PCACHE=$P4HOME/cache

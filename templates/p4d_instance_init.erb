@@ -32,6 +32,6 @@
 # description: Start Perforce instance <%= @instanceName %>
 
 # Source config for p4_<%= @instanceName %> instance
-source /p4/common/bin/p4_vars <%= @instanceName %> || exit 1
+source /p4/common/bin/p4_vars <%= @instance_name %> || exit 1
 
 source /p4/common/bin/p4d_base $1
