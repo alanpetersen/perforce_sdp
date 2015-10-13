@@ -16,6 +16,8 @@ class perforce::params {
   $p4broker_version       = '2015.1'
   $source_location_base   = 'ftp://ftp.perforce.com/perforce'
 
+  $refresh_staged_file    = false
+
   $p4_version_short       = regsubst($p4_version, '^20', '', 'G')
   $p4d_version_short      = regsubst($p4d_version, '^20', '', 'G')
   $p4broker_version_short = regsubst($p4broker_version, '^20', '', 'G')

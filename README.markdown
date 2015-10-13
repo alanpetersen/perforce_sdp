@@ -1,3 +1,0 @@
-# perforce_sdp #
-
-This is the perforce_sdp module. It provides...

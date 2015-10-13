@@ -6,7 +6,8 @@ class perforce::server (
   $staging_base_path    = $perforce::params::staging_base_path,
 ) inherits perforce::params {
 
-  $source_location = "${source_location_base}/r${p4_version_short}/${dist_dir_base}/p4d"
+  $p4d_version_short = regsubst($p4d_version, '^20', '', 'G')
+  $source_location   = "${source_location_base}/r${p4_version_short}/${dist_dir_base}/p4d"
 
   if(!defined(Class['staging'])) {
     class { 'staging':

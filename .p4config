@@ -1,0 +1,4 @@
+P4PORT=workshop.perforce.com:1666
+P4USER=alan_petersen
+P4CLIENT=alan_petersen_puppet_modules
+P4IGNORE=.p4ignore
