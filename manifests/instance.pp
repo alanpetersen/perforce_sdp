@@ -2,7 +2,7 @@ define perforce::instance (
   $ensure           = 'running', # one setting for all managed services
   # p4d settings
   $p4port           = undef,
-  $server_id        = undef, #
+  $server_id        = $title, # server_id for the instance
   $is_master        = true,  # true=master, false=replica
   $master_dns       = undef, # set if instance is a replica
   $ssl              = false,
@@ -11,12 +11,7 @@ define perforce::instance (
   # p4broker_settings
   $p4brokerport     = undef,
   $p4broker_version = undef,
-  $p4broker_target  = undef, #
-
-#  $p4webport        = undef,
-#  $p4ftpport        = undef,
-  $p4web_version    = undef,
-  $p4ftp_version    = undef,
+  $p4broker_target  = undef,
 ) {
 
   $instance_name = $title
