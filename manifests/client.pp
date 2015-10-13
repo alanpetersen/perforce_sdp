@@ -1,7 +1,7 @@
 class perforce::client (
   $p4_version           = $perforce::params::p4_version,
   $source_location_base = $perforce::params::source_location_base,
-  $dist_dir             = $perforce::params::dist_dir,
+  $dist_dir_base        = $perforce::params::dist_dir_base,
   $install_dir          = undef,
   $staging_base_path    = $perforce::params::staging_base_path,
   $refresh_staged_file  = $perforce::params::refresh_staged_file,
@@ -22,12 +22,7 @@ class perforce::client (
     file {'clear_staged_p4':
       ensure => 'absent',
       path   => $staged_file_location,
-  #    before => Staging::File['p4'],
     }
-    # exec { 'delete_staged_p4':
-    #   command => "/bin/rm ${staging_base_path}/perforce/p4",
-    #   before => Staging::File['p4'],
-    # }
   }
 
   staging::file { 'p4':
@@ -64,7 +59,7 @@ class perforce::client (
     mode    => '0700',
     owner   => $p4_owner,
     group   => $p4_group,
-    source  => "file:///$staged_file_location",
+    source  => "file:///${staged_file_location}",
     require => Staging::File['p4'],
   }
 

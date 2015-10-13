@@ -4,14 +4,24 @@ class perforce::broker (
   $dist_dir             = $perforce::params::dist_dir,
   $install_dir          = undef,
   $staging_base_path    = $perforce::params::staging_base_path,
+  $refresh_staged_file  = $perforce::params::refresh_staged_file,
 ) inherits perforce::params {
 
   $p4broker_version_short = regsubst($p4broker_version, '^20', '', 'G')
-  $source_location        = "${source_location_base}/r${p4_version_short}/${dist_dir_base}/p4broker"
+  $source_location        = "${source_location_base}/r${p4broker_version_short}/${dist_dir_base}/p4broker"
 
   if(!defined(Class['staging'])) {
     class { 'staging':
       path  => $staging_base_path,
+    }
+  }
+
+  $staged_file_location = "${staging_base_path}/${module_name}/p4broker"
+
+  if $refresh_staged_file {
+    file {'clear_staged_p4broker':
+      ensure => 'absent',
+      path   => $staged_file_location,
     }
   }
 
@@ -49,7 +59,7 @@ class perforce::broker (
     mode    => '0700',
     owner   => $p4d_owner,
     group   => $p4d_group,
-    source  => "file:///${staging_base_path}/perforce/p4broker",
+    source  => "file:///${staged_file_location}",
     require => Staging::File['p4broker'],
   }
 

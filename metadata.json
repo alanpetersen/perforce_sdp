@@ -1,6 +1,6 @@
 {
   "name": "alanpetersen-perforce",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "author": "Alan Petersen",
   "summary": "Installs and configures the Perforce Server Deployment Package",
   "license": "Apache-2.0",
@@ -77,6 +77,6 @@
         "Server 2012",
         "Server 2012 R2"
       ]
-    },
+    }
   ]
 }

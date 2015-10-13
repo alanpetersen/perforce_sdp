@@ -22,7 +22,8 @@ class perforce::params {
   $p4d_version_short      = regsubst($p4d_version, '^20', '', 'G')
   $p4broker_version_short = regsubst($p4broker_version, '^20', '', 'G')
 
-  $sdp_rev_field          = regsubst(split($sdp_version, ' ')[1], 'SDP/MultiArch/', '', 'G')
+  $parts                  = split($sdp_version, ' ')
+  $sdp_rev_field          = regsubst($parts[1], 'SDP/MultiArch/', '', 'G')
   $sdp_version_short      = regsubst($sdp_rev_field, '/', '.', 'G')
 
   case $::kernel {
