@@ -1,3 +1,5 @@
+# perforce::broker class
+#   - used to manage the p4broker binary
 class perforce::broker (
   $p4broker_version     = $perforce::params::p4broker_version,
   $source_location_base = $perforce::params::source_location_base,
@@ -8,7 +10,7 @@ class perforce::broker (
 ) inherits perforce::params {
 
   $p4broker_version_short = regsubst($p4broker_version, '^20', '', 'G')
-  $source_location        = "${source_location_base}/r${p4broker_version_short}/${dist_dir_base}/p4broker"
+  $source_location        = "${source_location_base}/r${p4broker_version_short}/${dist_dir}/p4broker"
 
   if(!defined(Class['staging'])) {
     class { 'staging':
@@ -32,33 +34,33 @@ class perforce::broker (
   if $install_dir == undef {
     if defined(Class['perforce::sdp_base']) {
       $actual_install_dir = "${perforce::sdp_base::p4_dir}/common/bin"
-      $p4d_owner = $perforce::sdp_base::osuser
-      $p4d_group = $perforce::sdp_base::osgroup
+      $p4broker_owner = $perforce::sdp_base::osuser
+      $p4broker_group = $perforce::sdp_base::osgroup
       exec { 'create_p4broker_links':
-        command     => "${p4_dir}/common/bin/create_links.sh p4broker",
-        cwd         => "${p4_dir}/common/bin",
+        command     => "${perforce::params::p4_dir}/common/bin/create_links.sh p4broker",
+        cwd         => "${perforce::params::p4_dir}/common/bin",
         refreshonly => true,
-        user        => $p4d_owner,
-        group       => $p4_group,
+        user        => $p4broker_owner,
+        group       => $p4broker_group,
         subscribe   => File['p4broker'],
       }
     } else {
-      $actual_install_dir = $default_install_dir
-      $p4d_owner = 'root'
-      $p4d_group = 'root'
+      $actual_install_dir = $perforce::params::default_install_dir
+      $p4broker_owner = 'root'
+      $p4broker_group = 'root'
     }
   } else {
     $actual_install_dir = $install_dir
-    $p4d_owner = 'root'
-    $p4d_group = 'root'
+    $p4broker_owner = 'root'
+    $p4broker_group = 'root'
   }
 
   file {'p4broker':
     ensure  => file,
     path    => "${actual_install_dir}/p4broker",
     mode    => '0700',
-    owner   => $p4d_owner,
-    group   => $p4d_group,
+    owner   => $p4broker_owner,
+    group   => $p4broker_group,
     source  => "file:///${staged_file_location}",
     require => Staging::File['p4broker'],
   }

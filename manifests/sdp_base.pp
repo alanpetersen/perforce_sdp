@@ -1,5 +1,8 @@
+# perforce::sdp_base class
+#   - used to manage the base SDP installation
 class perforce::sdp_base (
   $osuser               = $perforce::params::osuser,
+  $osuser_password      = $perforce::params::osuser_password,
   $osgroup              = $perforce::params::osgroup,
   $adminuser            = $perforce::params::adminuser,
   $adminpass            = $perforce::params::adminpass,
@@ -12,41 +15,71 @@ class perforce::sdp_base (
   $sslprefix            = $perforce::params::sslprefix,
   $sdp_version          = $perforce::params::sdp_version,
   $staging_base_path    = $perforce::params::staging_base_path,
+  $default_file_mode    = $perforce::params::default_file_mode,
 ) inherits perforce::params {
+
+  case $::kernel {
+    'Linux': {
+      class {'perforce::sdp_base_unix':
+      }
+    }
+    'Windows': {
+      class {'perforce::sdp_base_windows':
+      }
+    }
+    default: {
+      fail("${::kernel} is not supported with this module")
+    }
+  }
+
 
   File {
     ensure => 'file',
     owner  => $osuser,
     group  => $osgroup,
-    mode   => '0600',
+    mode   => $default_file_mode,
   }
 
-  group { $osgroup:
-    ensure => 'present'
+  if !defined(Group[$osgroup]) {
+    group { $osgroup:
+      ensure => 'present'
+    }
   }
 
-  user { $osuser:
-    ensure => 'present',
-    gid    => $osgroup,
-    home   => $p4_dir,
+  if !defined(User[$osuser]) {
+    if $perforce::params::sdp_type == 'Unix' {
+      user { $osuser:
+        ensure   => 'present',
+        password => $osuser_password,
+        gid      => $osgroup,
+        home     => $p4_dir,
+      }
+    } else {
+      user { $osuser:
+        ensure   => 'present',
+        password => $osuser_password,
+        groups   => $osgroup,
+      }
+    }
   }
 
   $p4_dir_expanded = splitpath($p4_dir)
+  notice("### p4_dir_expanded: ${p4_dir_expanded}")
   file { $p4_dir_expanded:
     ensure => 'directory',
   }
 
-  $depotdata_dir_expanded = splitpath("$depotdata_dir/p4")
+  $depotdata_dir_expanded = splitpath("${depotdata_dir}/p4")
   file { $depotdata_dir_expanded:
     ensure => 'directory',
   }
 
-  $metadata_dir_expanded = splitpath("$metadata_dir/p4")
+  $metadata_dir_expanded = splitpath("${metadata_dir}/p4")
   file { $metadata_dir_expanded:
     ensure => 'directory',
   }
 
-  $logs_dir_expanded = splitpath("$logs_dir/p4")
+  $logs_dir_expanded = splitpath("${logs_dir}/p4")
   file { $logs_dir_expanded:
     ensure => 'directory',
   }
@@ -57,38 +90,38 @@ class perforce::sdp_base (
     }
   }
 
-  staging::file { $sdp_distro:
-    source => "puppet:///modules/perforce/${sdp_distro}"
+  staging::file { $perforce::params::sdp_distro:
+    source => "puppet:///modules/perforce/${perforce::params::sdp_distro}"
   }
 
-  staging::extract { $sdp_distro:
+  staging::extract { $perforce::params::sdp_distro:
     target  => $depotdata_dir,
     creates => "${depotdata_dir}/sdp",
-    require => Staging::File[$sdp_distro],
+    require => Staging::File[$perforce::params::sdp_distro],
   }
 
   file { "${p4_dir}/Version":
     source  => "file:///${depotdata_dir}/sdp/Version",
-    require => Staging::Extract[$sdp_distro],
+    require => Staging::Extract[$perforce::params::sdp_distro],
   }
 
   file { "${depotdata_dir}/common":
-    mode    => '0700',
-    source  => "file:///${depotdata_dir}/sdp/Server/${sdp_type}/p4/common",
+    source  => "file:///${depotdata_dir}/sdp/Server/${perforce::params::sdp_type}/p4/common",
     recurse => true,
-    require => Staging::Extract[$sdp_distro],
+    require => Staging::Extract[$perforce::params::sdp_distro],
   }
 
-  file { "${depotdata_dir}/common/bin/create_links.sh":
-    mode    => '0700',
-    source  => 'puppet:///modules/perforce/create_links.sh',
-    require => Staging::Extract[$sdp_distro],
+  if $perforce::params::sdp_type == 'Unix' {
+    file { "${depotdata_dir}/common/bin/create_links.sh":
+      mode    => '0700',
+      source  => 'puppet:///modules/perforce/create_links.sh',
+      require => Staging::Extract[$perforce::params::sdp_distro],
+    }
   }
 
   file { "${depotdata_dir}/common/bin/p4d_base":
-    mode    => '0700',
     source  => 'puppet:///modules/perforce/p4d_base',
-    require => Staging::Extract[$sdp_distro],
+    require => Staging::Extract[$perforce::params::sdp_distro],
   }
 
   file { "${p4_dir}/common":
@@ -110,7 +143,6 @@ class perforce::sdp_base (
   }
 
   file { "${p4_dir}/common/bin/p4_vars":
-    mode    => '0700',
     content => template('perforce/p4_vars.erb')
   }
 

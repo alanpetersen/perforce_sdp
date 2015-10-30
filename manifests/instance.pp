@@ -1,3 +1,5 @@
+# perforce::instance defined type
+#   - used to manage an instance of a p4d or p4broker in an sdp setting
 define perforce::instance (
   $ensure           = 'running', # one setting for all managed services
   # p4d settings
@@ -43,6 +45,8 @@ define perforce::instance (
   $metadata_dir  = $perforce::sdp_base::metadata_dir
   $logs_dir      = $perforce::sdp_base::logs_dir
 
+  $p4_common     = "${p4_dir}/common"
+
   File {
     owner => $osuser,
     group => $osgroup,
@@ -52,7 +56,8 @@ define perforce::instance (
   # the perforce::sdp_base class ensures that the base software is installed and
   # available, so this needs to be declared
   if(!defined(Class['perforce::sdp_base'])) {
-    fail('Usage: must declare perforce::sdp_base class before using this resource.')
+    fail('Usage: must declare perforce::sdp_base class before
+          using this resource.')
   }
 
   # manage instance directory structure
@@ -83,11 +88,13 @@ define perforce::instance (
   if($p4port != undef) {
 
     if(!defined(Class['perforce::client'])) {
-      fail('Usage: must declare perforce::client class before using this resource.')
+      fail('Usage: must declare perforce::client class before
+            using this resource.')
     }
 
     if(!defined(Class['perforce::server'])) {
-      fail('Usage: must declare perforce::server class before using this resource.')
+      fail('Usage: must declare perforce::server class before
+            using this resource.')
     }
 
     if $is_master {
@@ -131,26 +138,26 @@ define perforce::instance (
     }
 
     # manage instance p4d service
-    if($::kernel == 'Linux') {
+    if $::kernel == 'Linux' {
       # service script
       file { "p4d_${title}_service":
-        ensure  => 'link',
-        path    => "/etc/init.d/p4d_${title}",
-        target  => "${p4_dir}/${title}/bin/p4d_${title}_init",
-        owner   => 'root',
-        group   => 'root',
+        ensure => 'link',
+        path   => "/etc/init.d/p4d_${title}",
+        target => "${p4_dir}/${title}/bin/p4d_${title}_init",
+        owner  => 'root',
+        group  => 'root',
       }
       # service
       service {"p4d_${title}":
-        ensure  => $service_ensure,
-        enable  => $service_enable,
+        ensure => $service_ensure,
+        enable => $service_enable,
       }
     }
 
     # manage instance variables file
     file { "p4_${title}.vars":
       ensure  => 'file',
-      path    => "${p4_dir}/common/config/p4_${title}.vars",
+      path    => "${p4_common}/config/p4_${title}.vars",
       mode    => '0700',
       content => template('perforce/instance_vars.erb'),
       notify  => Service["p4d_${title}"],
@@ -160,16 +167,16 @@ define perforce::instance (
     file { "p4_${title}":
       ensure => 'link',
       path   => "${p4_dir}/${title}/bin/p4_${title}",
-      target => "${p4_dir}/common/bin/p4_${p4d_instance_version}_bin",
-      notify  => Service["p4d_${title}"],
+      target => "${p4_common}/bin/p4_${p4d_instance_version}_bin",
+      notify => Service["p4d_${title}"],
     }
 
     # manage link to instance-specific p4d
     file { "p4d_${title}_bin":
       ensure => 'link',
-      path   => "${p4_dir}/common/bin/p4d_${title}_bin",
-      target => "${p4_dir}/common/bin/p4d_${p4d_instance_version}_bin",
-      notify  => Service["p4d_${title}"],
+      path   => "${p4_common}/bin/p4d_${title}_bin",
+      target => "${p4_common}/bin/p4d_${p4d_instance_version}_bin",
+      notify => Service["p4d_${title}"],
     }
 
     # manage instance wrapper
@@ -198,7 +205,8 @@ define perforce::instance (
 
     if($p4brokerport != undef) {
       if(!defined(Class['perforce::broker'])) {
-        fail('Usage: must declare perforce::broker class before using this resource.')
+        fail('Usage: must declare perforce::broker class before
+              using this resource.')
       }
     }
 
@@ -222,16 +230,16 @@ define perforce::instance (
     if($::kernel == 'Linux') {
       # service script
       file { "p4broker_${title}_service":
-        ensure  => 'link',
-        path    => "/etc/init.d/p4broker_${title}",
-        target  => "${p4_dir}/${title}/bin/p4broker_${title}_init",
-        owner   => 'root',
-        group   => 'root',
+        ensure => 'link',
+        path   => "/etc/init.d/p4broker_${title}",
+        target => "${p4_dir}/${title}/bin/p4broker_${title}_init",
+        owner  => 'root',
+        group  => 'root',
       }
       # service
       service {"p4broker_${title}":
-        ensure  => $service_ensure,
-        enable  => $service_enable,
+        ensure => $service_ensure,
+        enable => $service_enable,
       }
     }
 
@@ -239,22 +247,22 @@ define perforce::instance (
     file { "p4broker_${title}":
       ensure => 'link',
       path   => "${p4_dir}/${title}/bin/p4broker_${title}",
-      target => "${p4_dir}/common/bin/p4broker_${p4broker_instance_version}_bin",
-      notify  => Service["p4broker_${title}"],
+      target => "${p4_common}/bin/p4broker_${p4broker_instance_version}_bin",
+      notify => Service["p4broker_${title}"],
     }
 
     # manage link to instance-specific p4d
     file { "p4broker_${title}_bin":
       ensure => 'link',
-      path   => "${p4_dir}/common/bin/p4broker_${title}_bin",
-      target => "${p4_dir}/common/bin/p4broker_${p4broker_instance_version}_bin",
-      notify  => Service["p4broker_${title}"],
+      path   => "${p4_common}/bin/p4broker_${title}_bin",
+      target => "${p4_common}/bin/p4broker_${p4broker_instance_version}_bin",
+      notify => Service["p4broker_${title}"],
     }
 
     # manage instance variables file
     file { "p4_${title}.broker.cfg":
       ensure  => 'file',
-      path    => "${p4_dir}/common/config/p4_${title}.broker.cfg",
+      path    => "${p4_common}/config/p4_${title}.broker.cfg",
       mode    => '0700',
       content => template('perforce/broker_cfg.erb'),
       notify  => Service["p4broker_${title}"],

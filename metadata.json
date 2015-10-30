@@ -1,13 +1,13 @@
 {
   "name": "alanpetersen-perforce",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Alan Petersen",
-  "summary": "Installs and configures the Perforce Server Deployment Package",
+  "summary": "Manages the Perforce service, broker and command-line client, as well as the Server Deployment Package (SDP)",
   "license": "Apache-2.0",
   "source": "https://swarm.workshop.perforce.com/projects/alan_petersen-puppet/files/main/modules/perforce",
   "project_page": "https://swarm.workshop.perforce.com/projects/alan_petersen-puppet/",
   "issues_url": "https://swarm.workshop.perforce.com/projects/alan_petersen-puppet/jobs/",
-  "tags": ["perforce"],
+  "tags": ["perforce","sdp","p4","p4d","p4broker"],
   "dependencies": [
     {"name":"puppetlabs/stdlib","version_requirement":">= 3.2.0 < 5.0.0"},
     {"name":"nanliu/staging","version_requirement":">= 1.0.1 < 2.0.0"}

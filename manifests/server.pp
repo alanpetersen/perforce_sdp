@@ -1,14 +1,20 @@
+# perforce::server class
+#   - used to manage the p4d binary
 class perforce::server (
   $p4d_version          = $perforce::params::p4d_version,
+  $p4d_executable       = $perforce::params::p4d_executable,
   $source_location_base = $perforce::params::source_location_base,
   $dist_dir             = $perforce::params::dist_dir,
   $install_dir          = undef,
   $staging_base_path    = $perforce::params::staging_base_path,
   $refresh_staged_file  = $perforce::params::refresh_staged_file,
+  $default_install_dir  = $perforce::params::default_install_dir,
+  $default_os_user      = $perforce::params::default_os_user,
+  $default_os_group     = $perforce::params::default_os_group,
 ) inherits perforce::params {
 
   $p4d_version_short = regsubst($p4d_version, '^20', '', 'G')
-  $source_location   = "${source_location_base}/r${p4server_version_short}/${dist_dir_base}/p4d"
+  $source_location   = "${source_location_base}/r${p4d_version_short}/${dist_dir}/${p4d_executable}"
 
   if(!defined(Class['staging'])) {
     class { 'staging':
@@ -16,7 +22,7 @@ class perforce::server (
     }
   }
 
-  $staged_file_location = "${staging_base_path}/${module_name}/p4d"
+  $staged_file_location = "${staging_base_path}/${module_name}/${p4d_executable}"
 
   if $refresh_staged_file {
     file {'clear_staged_p4d':
@@ -25,7 +31,7 @@ class perforce::server (
     }
   }
 
-  staging::file { 'p4d':
+  staging::file { $p4d_executable:
     source => $source_location,
   }
 
@@ -44,23 +50,34 @@ class perforce::server (
       }
     } else {
       $actual_install_dir = $default_install_dir
-      $p4d_owner = 'root'
-      $p4d_group = 'root'
+      $p4_owner = $default_os_user
+      $p4_group = $default_os_group
     }
   } else {
     $actual_install_dir = $install_dir
-    $p4d_owner = 'root'
-    $p4d_group = 'root'
+    $p4_owner = $default_os_user
+    $p4_group = $default_os_group
+  }
+
+  if !defined(File[$actual_install_dir]) {
+    notice("### managing dir: ${actual_install_dir}")
+    file { $actual_install_dir:
+      ensure => 'directory',
+      owner  => $p4_owner,
+      group  => $p4_group,
+      mode   => '0777',
+      before => File['p4d'],
+    }
   }
 
   file {'p4d':
     ensure  => file,
-    path    => "${actual_install_dir}/p4d",
+    path    => "${actual_install_dir}/${p4d_executable}",
     mode    => '0700',
     owner   => $p4d_owner,
     group   => $p4d_group,
     source  => "file:///${staged_file_location}",
-    require => Staging::File['p4d'],
+    require => Staging::File[$p4d_executable],
   }
 
 }
