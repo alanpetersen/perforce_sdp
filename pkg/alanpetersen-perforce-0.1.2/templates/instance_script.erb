@@ -1,7 +1,0 @@
-#!/bin/bash
-P4D=/p4/common/bin/p4d_<%= @instance_name %>_bin
-<% if @case_sensitive -%>
-exec $P4D "$@"
-<% else -%>
-exec $P4D -C1 "$@"
-<% end -%>
