@@ -15,6 +15,8 @@ class perforce::client (
 ) inherits perforce::params {
 
   $p4_version_short = regsubst($p4_version, '^20', '', 'G')
+  notice("p4_version=${p4_version}")
+  notice("p4_version_short=${p4_version_short}")
   $source_location  = "${source_location_base}/r${p4_version_short}/${dist_dir}/${p4_executable}"
 
   if(!defined(Class['staging'])) {
@@ -26,9 +28,10 @@ class perforce::client (
   $staged_file_location = "${staging_base_path}/${module_name}/${p4_executable}"
 
   if $refresh_staged_file {
-    file {'clear_staged_p4':
-      ensure => 'absent',
-      path   => $staged_file_location,
+    exec {'clear_staged_p4':
+      command => "/bin/rm -f ${staged_file_location}",
+      onlyif  => "/bin/ls ${staged_file_location}",
+      before => Staging::File[$p4_executable],
     }
   }
 

@@ -4,4 +4,4 @@ fixtures:
     concat:  "git://github.com/puppetlabs/puppetlabs-concat.git"
     staging: "https://github.com/nanliu/puppet-staging.git"
   symlinks:
-    apache: "#{source_dir}"
+    perforce: "#{source_dir}"
