@@ -1,10 +1,10 @@
 .git
-.gitignore
 .p4config
-.p4ignore
 .DS_Store
 pkg
 pkg/...
-vendor/...
 vendor
+vendor/...
 log
+spec/fixtures
+.vagrant
